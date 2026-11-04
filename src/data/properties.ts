@@ -1,0 +1,449 @@
+export interface Property {
+  id: string;
+  name: string;
+  location: string;
+  city: string;
+  askingRate: number; // per sq.ft
+  unitSize: number; // sq.ft
+  totalPrice: number; // in lakhs
+  status: 'Active' | 'Sold' | 'Reserved';
+  type: 'Residential' | 'Commercial' | 'Industrial' | 'Warehouse';
+  investmentMode: 'PG' | 'Industrial' | 'Logistics' | 'Residential';
+  builder: string;
+  builderPhone: string;
+  dealer: string;
+  dealerPhone: string;
+  reraNumber: string;
+  reraVerified: boolean;
+  tower: string;
+  unit: string;
+  rentalYield: number;
+  priceHistory: { month: string; builderPrice: number; resalePrice: number; circleRate: number }[];
+  demandGenerators: string[];
+  distanceToHub: number; // km
+  appreciationRate: number; // % per year
+  vacancyRate: number; // %
+  propertyTax: number; // annual in rupees
+  maintenanceCost: number; // annual in rupees
+  avgMonthlyRent: number;
+  imageGradient: string;
+  lat: number;
+  lng: number;
+  // New fields for investment details
+  investmentRequired: {
+    renovationCost: number; // in lakhs
+    setupCost: number; // in lakhs (furniture, equipment, etc.)
+    totalInvestment: number; // in lakhs
+    description: string;
+  };
+  nearbyServices: {
+    schools: number;
+    hospitals: number;
+    metro: number; // distance in km
+    markets: number;
+    restaurants: number;
+    parks: number;
+  };
+  areaProspects: string[];
+}
+
+export const properties: Property[] = [
+  {
+    id: 'P001',
+    name: 'Godrej Woods',
+    location: 'Sector 43, Noida',
+    city: 'Noida',
+    askingRate: 8500,
+    unitSize: 1250,
+    totalPrice: 106.25,
+    status: 'Active',
+    type: 'Residential',
+    investmentMode: 'PG',
+    builder: 'Godrej Properties Ltd',
+    builderPhone: '919810045678',
+    dealer: 'Sharma Estates (Verified)',
+    dealerPhone: '919876543210',
+    reraNumber: 'UPRERAPRJ7384',
+    reraVerified: true,
+    tower: 'Tower B',
+    unit: '402',
+    rentalYield: 8.2,
+    priceHistory: [
+      { month: 'Jan', builderPrice: 8000, resalePrice: 7800, circleRate: 5500 },
+      { month: 'Feb', builderPrice: 8100, resalePrice: 7900, circleRate: 5500 },
+      { month: 'Mar', builderPrice: 8200, resalePrice: 8000, circleRate: 5600 },
+      { month: 'Apr', builderPrice: 8300, resalePrice: 8100, circleRate: 5600 },
+      { month: 'May', builderPrice: 8400, resalePrice: 8200, circleRate: 5700 },
+      { month: 'Jun', builderPrice: 8500, resalePrice: 8300, circleRate: 5700 },
+    ],
+    demandGenerators: ['Sharda University', 'Infosys Campus', 'Noida SEZ'],
+    distanceToHub: 1.8,
+    appreciationRate: 12,
+    vacancyRate: 5,
+    propertyTax: 45000,
+    maintenanceCost: 36000,
+    avgMonthlyRent: 8000,
+    imageGradient: 'from-emerald-500 to-teal-600',
+    lat: 28.5700,
+    lng: 77.3200,
+    investmentRequired: {
+      renovationCost: 5,
+      setupCost: 3,
+      totalInvestment: 8,
+      description: 'Convert to 6-bed PG: partition walls, beds, AC, WiFi setup'
+    },
+    nearbyServices: {
+      schools: 3,
+      hospitals: 2,
+      metro: 1.2,
+      markets: 4,
+      restaurants: 8,
+      parks: 2
+    },
+    areaProspects: [
+      'Sharda University campus driving student housing demand',
+      'Infosys SEZ creating IT professional rental market',
+      'Upcoming metro connectivity improving accessibility',
+      'Growing commercial establishments in vicinity'
+    ]
+  },
+  {
+    id: 'P002',
+    name: 'DLF Cyber City Office',
+    location: 'DLF Phase 3, Gurugram',
+    city: 'Gurugram',
+    askingRate: 12500,
+    unitSize: 2500,
+    totalPrice: 312.5,
+    status: 'Active',
+    type: 'Commercial',
+    investmentMode: 'Industrial',
+    builder: 'DLF Ltd',
+    builderPhone: '919810056789',
+    dealer: 'Prime Commercial Realty',
+    dealerPhone: '919876512340',
+    reraNumber: 'HRERAPRJ9823',
+    reraVerified: true,
+    tower: 'Tower 5',
+    unit: '1201',
+    rentalYield: 7.5,
+    priceHistory: [
+      { month: 'Jan', builderPrice: 11800, resalePrice: 11500, circleRate: 8000 },
+      { month: 'Feb', builderPrice: 11900, resalePrice: 11600, circleRate: 8000 },
+      { month: 'Mar', builderPrice: 12000, resalePrice: 11800, circleRate: 8200 },
+      { month: 'Apr', builderPrice: 12100, resalePrice: 11900, circleRate: 8200 },
+      { month: 'May', builderPrice: 12300, resalePrice: 12100, circleRate: 8400 },
+      { month: 'Jun', builderPrice: 12500, resalePrice: 12200, circleRate: 8400 },
+    ],
+    demandGenerators: ['DLF Cyber City', 'Google Office', 'American Express HQ'],
+    distanceToHub: 0.5,
+    appreciationRate: 10,
+    vacancyRate: 8,
+    propertyTax: 120000,
+    maintenanceCost: 96000,
+    avgMonthlyRent: 195000,
+    imageGradient: 'from-blue-500 to-indigo-600',
+    lat: 28.4949,
+    lng: 77.0865,
+    investmentRequired: {
+      renovationCost: 15,
+      setupCost: 10,
+      totalInvestment: 25,
+      description: 'Commercial fit-out: cabin partitions, HVAC, IT infrastructure'
+    },
+    nearbyServices: {
+      schools: 5,
+      hospitals: 4,
+      metro: 0.5,
+      markets: 12,
+      restaurants: 25,
+      parks: 6
+    },
+    areaProspects: [
+      'DLF Cyber City is India\'s largest corporate hub',
+      'Google, American Express, and Fortune 500 companies nearby',
+      'Excellent metro connectivity to Delhi and IGI Airport',
+      'Premium commercial market with low vacancy rates'
+    ]
+  },
+  {
+    id: 'P003',
+    name: 'LogiPark Warehouse',
+    location: 'NH-48, Bhiwadi',
+    city: 'Bhiwadi',
+    askingRate: 3500,
+    unitSize: 10000,
+    totalPrice: 350,
+    status: 'Active',
+    type: 'Warehouse',
+    investmentMode: 'Logistics',
+    builder: 'Logos India',
+    builderPhone: '919810067890',
+    dealer: 'Industrial Spaces India',
+    dealerPhone: '919876598765',
+    reraNumber: 'RJREPRJ4521',
+    reraVerified: true,
+    tower: 'Block C',
+    unit: 'W-14',
+    rentalYield: 9.8,
+    priceHistory: [
+      { month: 'Jan', builderPrice: 3200, resalePrice: 3100, circleRate: 2200 },
+      { month: 'Feb', builderPrice: 3250, resalePrice: 3150, circleRate: 2200 },
+      { month: 'Mar', builderPrice: 3300, resalePrice: 3200, circleRate: 2300 },
+      { month: 'Apr', builderPrice: 3350, resalePrice: 3250, circleRate: 2300 },
+      { month: 'May', builderPrice: 3400, resalePrice: 3300, circleRate: 2400 },
+      { month: 'Jun', builderPrice: 3500, resalePrice: 3400, circleRate: 2400 },
+    ],
+    demandGenerators: ['DFC Junction', 'NH-48 Corridor', 'Amazon Fulfillment Center'],
+    distanceToHub: 2.5,
+    appreciationRate: 15,
+    vacancyRate: 3,
+    propertyTax: 85000,
+    maintenanceCost: 72000,
+    avgMonthlyRent: 285000,
+    imageGradient: 'from-orange-500 to-red-600',
+    lat: 28.2000,
+    lng: 76.8700,
+    investmentRequired: {
+      renovationCost: 8,
+      setupCost: 12,
+      totalInvestment: 20,
+      description: 'Warehouse setup: loading docks, racking systems, security infrastructure'
+    },
+    nearbyServices: {
+      schools: 1,
+      hospitals: 1,
+      metro: 8.0,
+      markets: 2,
+      restaurants: 3,
+      parks: 1
+    },
+    areaProspects: [
+      'Located on NH-48 freight corridor',
+      'Dedicated Freight Corridor junction nearby',
+      'Amazon and Flipkart fulfillment centers in vicinity',
+      'Growing e-commerce logistics demand in NCR region'
+    ]
+  },
+  {
+    id: 'P004',
+    name: 'Prestige Lakeside Habitat',
+    location: 'Whitefield, Bangalore',
+    city: 'Bangalore',
+    askingRate: 7200,
+    unitSize: 1800,
+    totalPrice: 129.6,
+    status: 'Active',
+    type: 'Residential',
+    investmentMode: 'PG',
+    builder: 'Prestige Group',
+    builderPhone: '919810078901',
+    dealer: 'Bangalore Home Deals',
+    dealerPhone: '919876511223',
+    reraNumber: 'PRM/KA/RERA/1251/309/PR/180423/000572',
+    reraVerified: true,
+    tower: 'Tower 7',
+    unit: '903',
+    rentalYield: 6.8,
+    priceHistory: [
+      { month: 'Jan', builderPrice: 6800, resalePrice: 6600, circleRate: 4800 },
+      { month: 'Feb', builderPrice: 6900, resalePrice: 6700, circleRate: 4800 },
+      { month: 'Mar', builderPrice: 7000, resalePrice: 6800, circleRate: 4900 },
+      { month: 'Apr', builderPrice: 7050, resalePrice: 6900, circleRate: 4900 },
+      { month: 'May', builderPrice: 7100, resalePrice: 7000, circleRate: 5000 },
+      { month: 'Jun', builderPrice: 7200, resalePrice: 7100, circleRate: 5000 },
+    ],
+    demandGenerators: ['ITPL Tech Park', 'Whitefield Metro', 'Forum Mall'],
+    distanceToHub: 1.2,
+    appreciationRate: 11,
+    vacancyRate: 6,
+    propertyTax: 55000,
+    maintenanceCost: 42000,
+    avgMonthlyRent: 72000,
+    imageGradient: 'from-purple-500 to-pink-600',
+    lat: 12.9698,
+    lng: 77.7500,
+    investmentRequired: {
+      renovationCost: 6,
+      setupCost: 4,
+      totalInvestment: 10,
+      description: 'Convert to 8-bed PG: partition walls, bunk beds, common area setup'
+    },
+    nearbyServices: {
+      schools: 8,
+      hospitals: 5,
+      metro: 1.5,
+      markets: 15,
+      restaurants: 30,
+      parks: 10
+    },
+    areaProspects: [
+      'ITPL Tech Park driving IT professional rental demand',
+      'Whitefield Metro station improving connectivity',
+      'Major tech companies: SAP, Oracle, Wipro nearby',
+      'Thriving social infrastructure with malls and restaurants'
+    ]
+  },
+  {
+    id: 'P005',
+    name: 'Tata Housing Capital',
+    location: 'Sector 150, Noida',
+    city: 'Noida',
+    askingRate: 5800,
+    unitSize: 1650,
+    totalPrice: 95.7,
+    status: 'Reserved',
+    type: 'Residential',
+    investmentMode: 'Residential',
+    builder: 'Tata Housing',
+    builderPhone: '919810089012',
+    dealer: 'NCR Property Hub',
+    dealerPhone: '919876533445',
+    reraNumber: 'UPRERAPRJ8912',
+    reraVerified: true,
+    tower: 'Tower A',
+    unit: '1502',
+    rentalYield: 4.2,
+    priceHistory: [
+      { month: 'Jan', builderPrice: 5500, resalePrice: 5200, circleRate: 4000 },
+      { month: 'Feb', builderPrice: 5550, resalePrice: 5300, circleRate: 4000 },
+      { month: 'Mar', builderPrice: 5600, resalePrice: 5400, circleRate: 4100 },
+      { month: 'Apr', builderPrice: 5650, resalePrice: 5450, circleRate: 4100 },
+      { month: 'May', builderPrice: 5700, resalePrice: 5500, circleRate: 4200 },
+      { month: 'Jun', builderPrice: 5800, resalePrice: 5600, circleRate: 4200 },
+    ],
+    demandGenerators: ['Jewar Airport (Upcoming)', 'Film City', 'Sector 150 Metro'],
+    distanceToHub: 3.5,
+    appreciationRate: 18,
+    vacancyRate: 12,
+    propertyTax: 38000,
+    maintenanceCost: 30000,
+    avgMonthlyRent: 33000,
+    imageGradient: 'from-cyan-500 to-blue-600',
+    lat: 28.4800,
+    lng: 77.4500,
+    investmentRequired: {
+      renovationCost: 3,
+      setupCost: 2,
+      totalInvestment: 5,
+      description: 'Basic furnishing for family rental: modular kitchen, wardrobes'
+    },
+    nearbyServices: {
+      schools: 2,
+      hospitals: 1,
+      metro: 5.0,
+      markets: 3,
+      restaurants: 5,
+      parks: 4
+    },
+    areaProspects: [
+      'Jewar International Airport (under construction) - 15 min drive',
+      'Upcoming Film City project boosting area development',
+      'Sector 150 Metro station planned in next 3 years',
+      'High appreciation potential due to infrastructure development'
+    ]
+  },
+  {
+    id: 'P006',
+    name: 'Chakan Industrial Plot',
+    location: 'Chakan MIDC, Pune',
+    city: 'Pune',
+    askingRate: 4200,
+    unitSize: 5000,
+    totalPrice: 210,
+    status: 'Active',
+    type: 'Industrial',
+    investmentMode: 'Industrial',
+    builder: 'MIDC Authorized',
+    builderPhone: '919810090123',
+    dealer: 'Pune Industrial Realty',
+    dealerPhone: '919876544556',
+    reraNumber: 'MHREPRJ6734',
+    reraVerified: true,
+    tower: 'Plot 45',
+    unit: 'N/A',
+    rentalYield: 10.5,
+    priceHistory: [
+      { month: 'Jan', builderPrice: 3800, resalePrice: 3600, circleRate: 2800 },
+      { month: 'Feb', builderPrice: 3900, resalePrice: 3700, circleRate: 2800 },
+      { month: 'Mar', builderPrice: 3950, resalePrice: 3800, circleRate: 2900 },
+      { month: 'Apr', builderPrice: 4000, resalePrice: 3850, circleRate: 2900 },
+      { month: 'May', builderPrice: 4100, resalePrice: 3950, circleRate: 3000 },
+      { month: 'Jun', builderPrice: 4200, resalePrice: 4050, circleRate: 3000 },
+    ],
+    demandGenerators: ['Maruti Suzuki Plant', 'Tata Motors', 'Volkswagen SEZ'],
+    distanceToHub: 1.5,
+    appreciationRate: 14,
+    vacancyRate: 4,
+    propertyTax: 65000,
+    maintenanceCost: 48000,
+    avgMonthlyRent: 175000,
+    imageGradient: 'from-amber-500 to-orange-600',
+    lat: 18.7725,
+    lng: 73.8526,
+    investmentRequired: {
+      renovationCost: 10,
+      setupCost: 15,
+      totalInvestment: 25,
+      description: 'Industrial shed setup: boundary wall, power connection, office space'
+    },
+    nearbyServices: {
+      schools: 2,
+      hospitals: 2,
+      metro: 12.0,
+      markets: 4,
+      restaurants: 6,
+      parks: 2
+    },
+    areaProspects: [
+      'Maruti Suzuki, Tata Motors, Volkswagen plants nearby',
+      'Chakan MIDC is major automotive manufacturing hub',
+      'Excellent road connectivity to Mumbai-Pune Expressway',
+      'Growing demand from ancillary manufacturing units'
+    ]
+  },
+];
+
+export const investmentModes = [
+  {
+    id: 'PG',
+    label: 'Student/PG Housing',
+    icon: '🎓',
+    description: 'Properties near universities for multi-bed PG setups',
+    avgYield: '7-9%',
+    color: 'emerald',
+  },
+  {
+    id: 'Industrial',
+    label: 'Industrial Rental',
+    icon: '🏭',
+    description: 'Areas near manufacturing hubs & SEZs',
+    avgYield: '8-12%',
+    color: 'blue',
+  },
+  {
+    id: 'Logistics',
+    label: 'Logistics/Warehouse',
+    icon: '🚛',
+    description: 'Land near DFC, National Highways & transit hubs',
+    avgYield: '9-11%',
+    color: 'orange',
+  },
+  {
+    id: 'Residential',
+    label: 'Residential Rental',
+    icon: '🏠',
+    description: 'Standard residential with steady rental income',
+    avgYield: '3-5%',
+    color: 'purple',
+  },
+];
+
+export const mapZones = [
+  { id: 1, name: 'Noida SEZ', type: 'green', label: 'High Rental Demand', lat: 28.5700, lng: 77.3200, radius: 3000 },
+  { id: 2, name: 'Jewar Airport Corridor', type: 'blue', label: 'Upcoming Infrastructure', lat: 28.4800, lng: 77.5500, radius: 5000 },
+  { id: 3, name: 'Greater Noida West', type: 'red', label: 'Litigation Alert', lat: 28.5900, lng: 77.4200, radius: 2500 },
+  { id: 4, name: 'Gurugram Cyber City', type: 'green', label: 'High Rental Demand', lat: 28.4949, lng: 77.0865, radius: 3000 },
+  { id: 5, name: 'Dwarka Expressway', type: 'blue', label: 'Upcoming Metro', lat: 28.5500, lng: 76.9500, radius: 4000 },
+  { id: 6, name: 'Bhiwadi Industrial', type: 'green', label: 'High Industrial Demand', lat: 28.2000, lng: 76.8700, radius: 3500 },
+];
