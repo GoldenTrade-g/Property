@@ -51,27 +51,26 @@ export default function ROICalculator() {
 
   const selectedProperty = properties.find(p => p.id === selectedPropertyId);
 
-  // Show loading state
-  if (properties.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <RefreshCw className="w-8 h-8 text-emerald-400 animate-spin mx-auto mb-3" />
-          <p className="text-sm text-gray-400">Loading property data...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!selectedProperty) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <p className="text-sm text-gray-400">No property selected</p>
-      </div>
-    );
-  }
-
   const calculations = useMemo(() => {
+    // Return default values if no property selected
+    if (!selectedProperty) {
+      return {
+        stampDuty: 0,
+        totalCost: 0,
+        loanAmount: 0,
+        downPayment: 0,
+        emi: 0,
+        annualRent: 0,
+        annualEMI: 0,
+        vacancyCost: 0,
+        operatingExpenses: 0,
+        netAnnualCashFlow: 0,
+        netMonthlyCashFlow: 0,
+        cashOnCashROI: 0,
+        grossYield: 0,
+        projection: [],
+      };
+    }
     const stampDuty = propertyCost * 0.07;
     const totalCost = propertyCost + stampDuty;
     const loanAmount = propertyCost * (loanPercentage / 100);
@@ -138,6 +137,26 @@ export default function ROICalculator() {
       projection,
     };
   }, [propertyCost, loanPercentage, interestRate, loanTenure, monthlyRent, selectedProperty]);
+
+  // Show loading state
+  if (properties.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <RefreshCw className="w-8 h-8 text-emerald-400 animate-spin mx-auto mb-3" />
+          <p className="text-sm text-gray-400">Loading property data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!selectedProperty) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p className="text-sm text-gray-400">No property selected</p>
+      </div>
+    );
+  }
 
   const handlePropertySelect = (id: string) => {
     const prop = properties.find(p => p.id === id)!;
