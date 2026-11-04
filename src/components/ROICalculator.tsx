@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { 
   Calculator, 
   TrendingUp, 
@@ -7,21 +7,69 @@ import {
   CheckCircle,
   Info,
   Download,
-  FileSpreadsheet
+  FileSpreadsheet,
+  RefreshCw
 } from 'lucide-react';
 import { BarChart, Bar, LineChart, Line, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
-import { properties } from '../data/properties';
+import { Property } from '../data/properties';
+import { propertyDataService } from '../data/service';
 import * as XLSX from 'xlsx';
 
 export default function ROICalculator() {
-  const [selectedPropertyId, setSelectedPropertyId] = useState(properties[0].id);
-  const [propertyCost, setPropertyCost] = useState(properties[0].totalPrice * 100000);
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [selectedPropertyId, setSelectedPropertyId] = useState<string>('');
+  const [propertyCost, setPropertyCost] = useState(0);
   const [loanPercentage, setLoanPercentage] = useState(80);
   const [interestRate, setInterestRate] = useState(8.5);
   const [loanTenure, setLoanTenure] = useState(15);
-  const [monthlyRent, setMonthlyRent] = useState(properties[0].avgMonthlyRent);
+  const [monthlyRent, setMonthlyRent] = useState(0);
+  const [lastUpdate, setLastUpdate] = useState<string>('Loading...');
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const selectedProperty = properties.find(p => p.id === selectedPropertyId)!;
+  // Fetch data on mount and refresh
+  useEffect(() => {
+    loadData();
+    const interval = setInterval(loadData, 30000); // Refresh every 30 seconds
+    return () => clearInterval(interval);
+  }, []);
+
+  const loadData = async () => {
+    setIsRefreshing(true);
+    const result = await propertyDataService.fetchProperties();
+    setProperties(result.data);
+    setLastUpdate(propertyDataService.getTimeAgo());
+    
+    // Set default property if not set
+    if (!selectedPropertyId && result.data.length > 0) {
+      setSelectedPropertyId(result.data[0].id);
+      setPropertyCost(result.data[0].totalPrice * 100000);
+      setMonthlyRent(result.data[0].avgMonthlyRent);
+    }
+    
+    setIsRefreshing(false);
+  };
+
+  const selectedProperty = properties.find(p => p.id === selectedPropertyId);
+
+  // Show loading state
+  if (properties.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <RefreshCw className="w-8 h-8 text-emerald-400 animate-spin mx-auto mb-3" />
+          <p className="text-sm text-gray-400">Loading property data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!selectedProperty) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p className="text-sm text-gray-400">No property selected</p>
+      </div>
+    );
+  }
 
   const calculations = useMemo(() => {
     const stampDuty = propertyCost * 0.07;
@@ -176,6 +224,26 @@ export default function ROICalculator() {
 
   return (
     <div className="space-y-6">
+      {/* Live Data Indicator */}
+      <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+            <span className="text-xs font-medium text-emerald-400">LIVE DATA</span>
+          </div>
+          <span className="text-xs text-gray-400">Last updated: {lastUpdate}</span>
+          <span className="text-xs text-gray-500">• Prices fluctuate in real-time</span>
+        </div>
+        <button
+          onClick={loadData}
+          disabled={isRefreshing}
+          className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg text-xs font-medium hover:bg-emerald-500/20 transition-colors disabled:opacity-50"
+        >
+          <RefreshCw className={`w-3 h-3 ${isRefreshing ? 'animate-spin' : ''}`} />
+          {isRefreshing ? 'Refreshing...' : 'Refresh'}
+        </button>
+      </div>
+
       {/* Property Selection */}
       <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
         <div className="flex items-center justify-between mb-4">

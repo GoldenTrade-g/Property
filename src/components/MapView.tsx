@@ -3,9 +3,11 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { 
   Layers,
-  MapPin
+  MapPin,
+  RefreshCw
 } from 'lucide-react';
-import { mapZones, properties, Property } from '../data/properties';
+import { mapZones, Property } from '../data/properties';
+import { propertyDataService } from '../data/service';
 
 type ZoneType = 'all' | 'green' | 'blue' | 'red';
 
@@ -14,6 +16,24 @@ export default function MapView() {
   const mapInstanceRef = useRef<L.Map | null>(null);
   const [activeFilter, setActiveFilter] = useState<ZoneType>('all');
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [lastUpdate, setLastUpdate] = useState<string>('Loading...');
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Fetch data on mount and refresh
+  useEffect(() => {
+    loadData();
+    const interval = setInterval(loadData, 30000); // Refresh every 30 seconds
+    return () => clearInterval(interval);
+  }, []);
+
+  const loadData = async () => {
+    setIsRefreshing(true);
+    const result = await propertyDataService.fetchProperties();
+    setProperties(result.data);
+    setLastUpdate(propertyDataService.getTimeAgo());
+    setIsRefreshing(false);
+  };
 
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
@@ -123,6 +143,26 @@ export default function MapView() {
 
   return (
     <div className="space-y-6">
+      {/* Live Data Indicator */}
+      <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+            <span className="text-xs font-medium text-emerald-400">LIVE DATA</span>
+          </div>
+          <span className="text-xs text-gray-400">Last updated: {lastUpdate}</span>
+          <span className="text-xs text-gray-500">• Map updates in real-time</span>
+        </div>
+        <button
+          onClick={loadData}
+          disabled={isRefreshing}
+          className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg text-xs font-medium hover:bg-emerald-500/20 transition-colors disabled:opacity-50"
+        >
+          <RefreshCw className={`w-3 h-3 ${isRefreshing ? 'animate-spin' : ''}`} />
+          {isRefreshing ? 'Refreshing...' : 'Refresh'}
+        </button>
+      </div>
+
       {/* Legend & Filters */}
       <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">

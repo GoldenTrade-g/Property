@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Search, 
   Filter, 
@@ -6,15 +6,35 @@ import {
   Shield, 
   Clock,
   MapPin,
-  Building
+  Building,
+  RefreshCw
 } from 'lucide-react';
-import { properties, investmentModes, Property } from '../data/properties';
+import { investmentModes, Property } from '../data/properties';
+import { propertyDataService } from '../data/service';
 import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
 
 export default function PropertyScanner() {
+  const [properties, setProperties] = useState<Property[]>([]);
   const [selectedMode, setSelectedMode] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
+  const [lastUpdate, setLastUpdate] = useState<string>('Loading...');
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Fetch data on mount and refresh
+  useEffect(() => {
+    loadData();
+    const interval = setInterval(loadData, 30000); // Refresh every 30 seconds
+    return () => clearInterval(interval);
+  }, []);
+
+  const loadData = async () => {
+    setIsRefreshing(true);
+    const result = await propertyDataService.fetchProperties();
+    setProperties(result.data);
+    setLastUpdate(propertyDataService.getTimeAgo());
+    setIsRefreshing(false);
+  };
 
   const filteredProperties = properties.filter(p => {
     const matchesMode = selectedMode === 'all' || p.investmentMode === selectedMode;
@@ -73,13 +93,23 @@ export default function PropertyScanner() {
       </div>
 
       {/* Last Scan Info */}
-      <div className="flex items-center gap-2 px-4 py-2 bg-gray-900/50 border border-gray-800 rounded-xl">
-        <Clock className="w-3.5 h-3.5 text-amber-400" />
-        <span className="text-xs text-gray-400">Last updated: 2 hours ago</span>
-        <span className="text-xs text-gray-600">|</span>
-        <span className="text-xs text-gray-400">Auto-refreshes every 6 hours</span>
-        <span className="text-xs text-gray-600">|</span>
-        <span className="text-xs text-emerald-400">{filteredProperties.length} live listings</span>
+      <div className="flex items-center justify-between px-4 py-2 bg-gray-900/50 border border-gray-800 rounded-xl">
+        <div className="flex items-center gap-2">
+          <Clock className="w-3.5 h-3.5 text-amber-400" />
+          <span className="text-xs text-gray-400">Last updated: {lastUpdate}</span>
+          <span className="text-xs text-gray-600">|</span>
+          <span className="text-xs text-gray-400">Auto-refreshes every 30 seconds</span>
+          <span className="text-xs text-gray-600">|</span>
+          <span className="text-xs text-emerald-400">{filteredProperties.length} live listings</span>
+        </div>
+        <button
+          onClick={loadData}
+          disabled={isRefreshing}
+          className="flex items-center gap-1 px-2 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded text-[10px] font-medium hover:bg-emerald-500/20 transition-colors disabled:opacity-50"
+        >
+          <RefreshCw className={`w-3 h-3 ${isRefreshing ? 'animate-spin' : ''}`} />
+          {isRefreshing ? 'Updating...' : 'Refresh'}
+        </button>
       </div>
 
       {/* Property Table */}

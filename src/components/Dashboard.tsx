@@ -9,10 +9,12 @@ import {
   Eye,
   Crown,
   X,
-  Check
+  Check,
+  RefreshCw
 } from 'lucide-react';
-import { useState } from 'react';
-import { properties } from '../data/properties';
+import { useState, useEffect } from 'react';
+import { propertyDataService } from '../data/service';
+import { Property } from '../data/properties';
 import { AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
 
 interface DashboardProps {
@@ -21,8 +23,27 @@ interface DashboardProps {
 
 export default function Dashboard({ onNavigate }: DashboardProps) {
   const [showPremiumModal, setShowPremiumModal] = useState(false);
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [lastUpdate, setLastUpdate] = useState<string>('Loading...');
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Fetch data on mount and refresh
+  useEffect(() => {
+    loadData();
+    const interval = setInterval(loadData, 30000); // Refresh every 30 seconds
+    return () => clearInterval(interval);
+  }, []);
+
+  const loadData = async () => {
+    setIsRefreshing(true);
+    const result = await propertyDataService.fetchProperties();
+    setProperties(result.data);
+    setLastUpdate(propertyDataService.getTimeAgo());
+    setIsRefreshing(false);
+  };
+
   const totalProperties = properties.length;
-  const avgYield = (properties.reduce((sum, p) => sum + p.rentalYield, 0) / totalProperties).toFixed(1);
+  const avgYield = totalProperties > 0 ? (properties.reduce((sum, p) => sum + p.rentalYield, 0) / totalProperties).toFixed(1) : '0';
   const activeListings = properties.filter(p => p.status === 'Active').length;
   const verifiedCount = properties.filter(p => p.reraVerified).length;
 
@@ -46,6 +67,26 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
 
   return (
     <div className="space-y-6">
+      {/* Live Data Indicator */}
+      <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+            <span className="text-xs font-medium text-emerald-400">LIVE DATA</span>
+          </div>
+          <span className="text-xs text-gray-400">Last updated: {lastUpdate}</span>
+          <span className="text-xs text-gray-500">• Auto-refreshes every 30 seconds</span>
+        </div>
+        <button
+          onClick={loadData}
+          disabled={isRefreshing}
+          className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg text-xs font-medium hover:bg-emerald-500/20 transition-colors disabled:opacity-50"
+        >
+          <RefreshCw className={`w-3 h-3 ${isRefreshing ? 'animate-spin' : ''}`} />
+          {isRefreshing ? 'Refreshing...' : 'Refresh'}
+        </button>
+      </div>
+
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat, i) => (

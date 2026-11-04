@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Phone, 
   MessageCircle, 
@@ -11,14 +11,34 @@ import {
   Copy,
   Check,
   Crown,
-  X
+  X,
+  RefreshCw
 } from 'lucide-react';
-import { properties } from '../data/properties';
+import { Property } from '../data/properties';
+import { propertyDataService } from '../data/service';
 
 export default function DirectConnect() {
+  const [properties, setProperties] = useState<Property[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [copiedNumber, setCopiedNumber] = useState<string | null>(null);
   const [showPremiumModal, setShowPremiumModal] = useState(false);
+  const [lastUpdate, setLastUpdate] = useState<string>('Loading...');
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Fetch data on mount and refresh
+  useEffect(() => {
+    loadData();
+    const interval = setInterval(loadData, 30000); // Refresh every 30 seconds
+    return () => clearInterval(interval);
+  }, []);
+
+  const loadData = async () => {
+    setIsRefreshing(true);
+    const result = await propertyDataService.fetchProperties();
+    setProperties(result.data);
+    setLastUpdate(propertyDataService.getTimeAgo());
+    setIsRefreshing(false);
+  };
 
   const filteredProperties = properties.filter(p => 
     p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -34,6 +54,26 @@ export default function DirectConnect() {
 
   return (
     <div className="space-y-6">
+      {/* Live Data Indicator */}
+      <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+            <span className="text-xs font-medium text-emerald-400">LIVE DATA</span>
+          </div>
+          <span className="text-xs text-gray-400">Last updated: {lastUpdate}</span>
+          <span className="text-xs text-gray-500">• Contacts verified in real-time</span>
+        </div>
+        <button
+          onClick={loadData}
+          disabled={isRefreshing}
+          className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg text-xs font-medium hover:bg-emerald-500/20 transition-colors disabled:opacity-50"
+        >
+          <RefreshCw className={`w-3 h-3 ${isRefreshing ? 'animate-spin' : ''}`} />
+          {isRefreshing ? 'Refreshing...' : 'Refresh'}
+        </button>
+      </div>
+
       {/* Info Banner */}
       <div className="bg-gradient-to-r from-emerald-500/10 to-cyan-500/10 border border-emerald-500/20 rounded-2xl p-6">
         <div className="flex items-start gap-4">
