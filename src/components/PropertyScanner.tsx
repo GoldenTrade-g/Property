@@ -90,8 +90,9 @@ export default function PropertyScanner() {
               <tr className="border-b border-gray-800">
                 <th className="text-left px-6 py-4 text-xs font-semibold text-gray-400 uppercase">Property</th>
                 <th className="text-left px-6 py-4 text-xs font-semibold text-gray-400 uppercase">Unit</th>
-                <th className="text-left px-6 py-4 text-xs font-semibold text-gray-400 uppercase">Rate</th>
                 <th className="text-left px-6 py-4 text-xs font-semibold text-gray-400 uppercase">Total Price</th>
+                <th className="text-left px-6 py-4 text-xs font-semibold text-gray-400 uppercase">Monthly Rent</th>
+                <th className="text-left px-6 py-4 text-xs font-semibold text-gray-400 uppercase">Investment Req.</th>
                 <th className="text-left px-6 py-4 text-xs font-semibold text-gray-400 uppercase">Yield</th>
                 <th className="text-left px-6 py-4 text-xs font-semibold text-gray-400 uppercase">Status</th>
                 <th className="text-left px-6 py-4 text-xs font-semibold text-gray-400 uppercase">RERA</th>
@@ -123,10 +124,16 @@ export default function PropertyScanner() {
                     <p className="text-xs text-gray-400">{property.unitSize} sq.ft</p>
                   </td>
                   <td className="px-6 py-4">
-                    <p className="text-sm font-medium text-white">₹{property.askingRate.toLocaleString()}/sq.ft</p>
+                    <p className="text-sm font-bold text-white">₹{property.totalPrice}L</p>
+                    <p className="text-[10px] text-gray-400">Loan: ₹{(property.totalPrice * 0.8).toFixed(0)}L / 15yr</p>
                   </td>
                   <td className="px-6 py-4">
-                    <p className="text-sm font-bold text-white">₹{property.totalPrice}L</p>
+                    <p className="text-sm font-bold text-emerald-400">₹{property.avgMonthlyRent.toLocaleString()}</p>
+                    <p className="text-[10px] text-gray-400">₹{(property.avgMonthlyRent * 12 / 100000).toFixed(1)}L/yr</p>
+                  </td>
+                  <td className="px-6 py-4">
+                    <p className="text-sm font-bold text-amber-400">₹{property.investmentRequired.totalInvestment}L</p>
+                    <p className="text-[10px] text-gray-400">{property.investmentMode} setup</p>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-1">
@@ -220,12 +227,55 @@ function PropertyDetailModal({ property, onClose }: { property: Property; onClos
               <p className="text-sm font-bold text-white">₹{property.totalPrice}L</p>
             </div>
             <div className="p-3 bg-gray-800/50 rounded-xl">
-              <p className="text-xs text-gray-400">Rental Yield</p>
-              <p className="text-sm font-bold text-emerald-400">{property.rentalYield}%</p>
+              <p className="text-xs text-gray-400">Monthly Rent</p>
+              <p className="text-sm font-bold text-emerald-400">₹{property.avgMonthlyRent.toLocaleString()}</p>
             </div>
             <div className="p-3 bg-gray-800/50 rounded-xl">
-              <p className="text-xs text-gray-400">Appreciation</p>
-              <p className="text-sm font-bold text-cyan-400">{property.appreciationRate}%/yr</p>
+              <p className="text-xs text-gray-400">Rental Yield</p>
+              <p className="text-sm font-bold text-cyan-400">{property.rentalYield}%</p>
+            </div>
+          </div>
+
+          {/* Investment Details */}
+          <div className="bg-gray-800/30 border border-gray-700 rounded-xl p-4">
+            <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
+              💰 Investment & Loan Details
+            </h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+              <div>
+                <p className="text-[10px] text-gray-400">Loan Amount (80%)</p>
+                <p className="text-sm font-bold text-white">₹{(property.totalPrice * 0.8).toFixed(1)}L</p>
+              </div>
+              <div>
+                <p className="text-[10px] text-gray-400">Loan Tenure</p>
+                <p className="text-sm font-bold text-white">15 years</p>
+              </div>
+              <div>
+                <p className="text-[10px] text-gray-400">Down Payment (20%)</p>
+                <p className="text-sm font-bold text-white">₹{(property.totalPrice * 0.2).toFixed(1)}L</p>
+              </div>
+              <div>
+                <p className="text-[10px] text-gray-400">Appreciation</p>
+                <p className="text-sm font-bold text-cyan-400">{property.appreciationRate}%/yr</p>
+              </div>
+            </div>
+            <div className="border-t border-gray-700 pt-3">
+              <p className="text-xs font-semibold text-white mb-2">Investment Required for Rental Setup:</p>
+              <div className="grid grid-cols-3 gap-2 mb-2">
+                <div className="p-2 bg-gray-800/50 rounded-lg">
+                  <p className="text-[10px] text-gray-400">Renovation</p>
+                  <p className="text-xs font-bold text-amber-400">₹{property.investmentRequired.renovationCost}L</p>
+                </div>
+                <div className="p-2 bg-gray-800/50 rounded-lg">
+                  <p className="text-[10px] text-gray-400">Setup Cost</p>
+                  <p className="text-xs font-bold text-amber-400">₹{property.investmentRequired.setupCost}L</p>
+                </div>
+                <div className="p-2 bg-gray-800/50 rounded-lg">
+                  <p className="text-[10px] text-gray-400">Total Investment</p>
+                  <p className="text-xs font-bold text-amber-400">₹{property.investmentRequired.totalInvestment}L</p>
+                </div>
+              </div>
+              <p className="text-[11px] text-gray-300 italic">{property.investmentRequired.description}</p>
             </div>
           </div>
 
@@ -254,6 +304,54 @@ function PropertyDetailModal({ property, onClose }: { property: Property; onClos
               <span className="flex items-center gap-1 text-xs text-gray-400"><span className="w-3 h-0.5 bg-emerald-500 rounded" /> Builder Price</span>
               <span className="flex items-center gap-1 text-xs text-gray-400"><span className="w-3 h-0.5 bg-indigo-500 rounded" /> Resale Price</span>
               <span className="flex items-center gap-1 text-xs text-gray-400"><span className="w-3 h-0.5 bg-amber-500 rounded" /> Circle Rate</span>
+            </div>
+          </div>
+
+          {/* Nearby Services */}
+          <div>
+            <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
+              🏪 Nearby Services & Amenities
+            </h3>
+            <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
+              <div className="p-2 bg-blue-500/10 border border-blue-500/20 rounded-lg text-center">
+                <p className="text-lg font-bold text-blue-400">{property.nearbyServices.schools}</p>
+                <p className="text-[10px] text-gray-400">Schools</p>
+              </div>
+              <div className="p-2 bg-red-500/10 border border-red-500/20 rounded-lg text-center">
+                <p className="text-lg font-bold text-red-400">{property.nearbyServices.hospitals}</p>
+                <p className="text-[10px] text-gray-400">Hospitals</p>
+              </div>
+              <div className="p-2 bg-cyan-500/10 border border-cyan-500/20 rounded-lg text-center">
+                <p className="text-lg font-bold text-cyan-400">{property.nearbyServices.metro}km</p>
+                <p className="text-[10px] text-gray-400">Metro</p>
+              </div>
+              <div className="p-2 bg-purple-500/10 border border-purple-500/20 rounded-lg text-center">
+                <p className="text-lg font-bold text-purple-400">{property.nearbyServices.markets}</p>
+                <p className="text-[10px] text-gray-400">Markets</p>
+              </div>
+              <div className="p-2 bg-amber-500/10 border border-amber-500/20 rounded-lg text-center">
+                <p className="text-lg font-bold text-amber-400">{property.nearbyServices.restaurants}</p>
+                <p className="text-[10px] text-gray-400">Restaurants</p>
+              </div>
+              <div className="p-2 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-center">
+                <p className="text-lg font-bold text-emerald-400">{property.nearbyServices.parks}</p>
+                <p className="text-[10px] text-gray-400">Parks</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Area Prospects */}
+          <div>
+            <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
+              📈 Area Prospects & Growth Drivers
+            </h3>
+            <div className="space-y-2">
+              {property.areaProspects.map((prospect, i) => (
+                <div key={i} className="flex items-start gap-2 p-2 bg-gray-800/30 rounded-lg">
+                  <span className="text-emerald-400 text-xs mt-0.5">✓</span>
+                  <p className="text-xs text-gray-300">{prospect}</p>
+                </div>
+              ))}
             </div>
           </div>
 

@@ -29,6 +29,22 @@ export interface Property {
   imageGradient: string;
   lat: number;
   lng: number;
+  // New fields for investment details
+  investmentRequired: {
+    renovationCost: number; // in lakhs
+    setupCost: number; // in lakhs (furniture, equipment, etc.)
+    totalInvestment: number; // in lakhs
+    description: string;
+  };
+  nearbyServices: {
+    schools: number;
+    hospitals: number;
+    metro: number; // distance in km
+    markets: number;
+    restaurants: number;
+    parks: number;
+  };
+  areaProspects: string[];
 }
 
 export const properties: Property[] = [
@@ -70,6 +86,26 @@ export const properties: Property[] = [
     imageGradient: 'from-emerald-500 to-teal-600',
     lat: 28.5700,
     lng: 77.3200,
+    investmentRequired: {
+      renovationCost: 5,
+      setupCost: 3,
+      totalInvestment: 8,
+      description: 'Convert to 6-bed PG: partition walls, beds, AC, WiFi setup'
+    },
+    nearbyServices: {
+      schools: 3,
+      hospitals: 2,
+      metro: 1.2,
+      markets: 4,
+      restaurants: 8,
+      parks: 2
+    },
+    areaProspects: [
+      'Sharda University campus driving student housing demand',
+      'Infosys SEZ creating IT professional rental market',
+      'Upcoming metro connectivity improving accessibility',
+      'Growing commercial establishments in vicinity'
+    ]
   },
   {
     id: 'P002',
@@ -109,6 +145,26 @@ export const properties: Property[] = [
     imageGradient: 'from-blue-500 to-indigo-600',
     lat: 28.4949,
     lng: 77.0865,
+    investmentRequired: {
+      renovationCost: 15,
+      setupCost: 10,
+      totalInvestment: 25,
+      description: 'Commercial fit-out: cabin partitions, HVAC, IT infrastructure'
+    },
+    nearbyServices: {
+      schools: 5,
+      hospitals: 4,
+      metro: 0.5,
+      markets: 12,
+      restaurants: 25,
+      parks: 6
+    },
+    areaProspects: [
+      'DLF Cyber City is India\'s largest corporate hub',
+      'Google, American Express, and Fortune 500 companies nearby',
+      'Excellent metro connectivity to Delhi and IGI Airport',
+      'Premium commercial market with low vacancy rates'
+    ]
   },
   {
     id: 'P003',
@@ -148,6 +204,26 @@ export const properties: Property[] = [
     imageGradient: 'from-orange-500 to-red-600',
     lat: 28.2000,
     lng: 76.8700,
+    investmentRequired: {
+      renovationCost: 8,
+      setupCost: 12,
+      totalInvestment: 20,
+      description: 'Warehouse setup: loading docks, racking systems, security infrastructure'
+    },
+    nearbyServices: {
+      schools: 1,
+      hospitals: 1,
+      metro: 8.0,
+      markets: 2,
+      restaurants: 3,
+      parks: 1
+    },
+    areaProspects: [
+      'Located on NH-48 freight corridor',
+      'Dedicated Freight Corridor junction nearby',
+      'Amazon and Flipkart fulfillment centers in vicinity',
+      'Growing e-commerce logistics demand in NCR region'
+    ]
   },
   {
     id: 'P004',
@@ -187,6 +263,26 @@ export const properties: Property[] = [
     imageGradient: 'from-purple-500 to-pink-600',
     lat: 12.9698,
     lng: 77.7500,
+    investmentRequired: {
+      renovationCost: 6,
+      setupCost: 4,
+      totalInvestment: 10,
+      description: 'Convert to 8-bed PG: partition walls, bunk beds, common area setup'
+    },
+    nearbyServices: {
+      schools: 8,
+      hospitals: 5,
+      metro: 1.5,
+      markets: 15,
+      restaurants: 30,
+      parks: 10
+    },
+    areaProspects: [
+      'ITPL Tech Park driving IT professional rental demand',
+      'Whitefield Metro station improving connectivity',
+      'Major tech companies: SAP, Oracle, Wipro nearby',
+      'Thriving social infrastructure with malls and restaurants'
+    ]
   },
   {
     id: 'P005',
@@ -226,6 +322,26 @@ export const properties: Property[] = [
     imageGradient: 'from-cyan-500 to-blue-600',
     lat: 28.4800,
     lng: 77.4500,
+    investmentRequired: {
+      renovationCost: 3,
+      setupCost: 2,
+      totalInvestment: 5,
+      description: 'Basic furnishing for family rental: modular kitchen, wardrobes'
+    },
+    nearbyServices: {
+      schools: 2,
+      hospitals: 1,
+      metro: 5.0,
+      markets: 3,
+      restaurants: 5,
+      parks: 4
+    },
+    areaProspects: [
+      'Jewar International Airport (under construction) - 15 min drive',
+      'Upcoming Film City project boosting area development',
+      'Sector 150 Metro station planned in next 3 years',
+      'High appreciation potential due to infrastructure development'
+    ]
   },
   {
     id: 'P006',
@@ -265,6 +381,26 @@ export const properties: Property[] = [
     imageGradient: 'from-amber-500 to-orange-600',
     lat: 18.7725,
     lng: 73.8526,
+    investmentRequired: {
+      renovationCost: 10,
+      setupCost: 15,
+      totalInvestment: 25,
+      description: 'Industrial shed setup: boundary wall, power connection, office space'
+    },
+    nearbyServices: {
+      schools: 2,
+      hospitals: 2,
+      metro: 12.0,
+      markets: 4,
+      restaurants: 6,
+      parks: 2
+    },
+    areaProspects: [
+      'Maruti Suzuki, Tata Motors, Volkswagen plants nearby',
+      'Chakan MIDC is major automotive manufacturing hub',
+      'Excellent road connectivity to Mumbai-Pune Expressway',
+      'Growing demand from ancillary manufacturing units'
+    ]
   },
 ];
 

@@ -162,7 +162,7 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h3 className="text-lg font-bold text-white">🔥 Top Investment Picks</h3>
-            <p className="text-xs text-gray-400">Highest ROI potential based on current market data</p>
+            <p className="text-xs text-gray-400">Complete investment analysis with returns and area prospects</p>
           </div>
           <button 
             onClick={() => onNavigate('scanner')}
@@ -172,37 +172,71 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
           </button>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {topPicks.map((property) => (
-            <div key={property.id} className="bg-gray-800/50 border border-gray-700 rounded-xl p-4 hover:border-emerald-500/30 transition-colors">
-              <div className={`w-full h-24 rounded-lg bg-gradient-to-br ${property.imageGradient} mb-4 flex items-center justify-center`}>
-                <span className="text-3xl">
-                  {property.type === 'Warehouse' ? '🏗️' : property.type === 'Industrial' ? '🏭' : property.type === 'Commercial' ? '🏢' : '🏠'}
-                </span>
-              </div>
-              <h4 className="text-sm font-bold text-white mb-1">{property.name}</h4>
-              <p className="text-xs text-gray-400 mb-3">{property.location}</p>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-gray-400">Total Price</p>
-                  <p className="text-sm font-bold text-white">₹{property.totalPrice}L</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-xs text-gray-400">Monthly Return</p>
-                  <p className="text-sm font-bold text-emerald-400">₹{(property.avgMonthlyRent).toLocaleString()}</p>
-                </div>
-              </div>
-              <div className="mt-3 flex items-center gap-1">
-                {property.reraVerified && (
-                  <span className="text-[10px] px-2 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full">
-                    ✓ RERA Verified
+          {topPicks.map((property) => {
+            const loanAmount = property.totalPrice * 0.8;
+            const loanTenure = 15;
+            return (
+              <div key={property.id} className="bg-gray-800/50 border border-gray-700 rounded-xl p-4 hover:border-emerald-500/30 transition-colors">
+                <div className={`w-full h-20 rounded-lg bg-gradient-to-br ${property.imageGradient} mb-4 flex items-center justify-center`}>
+                  <span className="text-3xl">
+                    {property.type === 'Warehouse' ? '🏗️' : property.type === 'Industrial' ? '🏭' : property.type === 'Commercial' ? '🏢' : '🏠'}
                   </span>
-                )}
-                <span className="text-[10px] px-2 py-0.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-full">
-                  {property.investmentMode}
-                </span>
+                </div>
+                <h4 className="text-sm font-bold text-white mb-1">{property.name}</h4>
+                <p className="text-xs text-gray-400 mb-3">{property.location}</p>
+                
+                {/* Investment Details */}
+                <div className="space-y-2 mb-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] text-gray-400">Monthly Rent</span>
+                    <span className="text-xs font-bold text-emerald-400">₹{property.avgMonthlyRent.toLocaleString()}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] text-gray-400">Loan Amount (80%)</span>
+                    <span className="text-xs font-bold text-white">₹{loanAmount.toFixed(1)}L</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] text-gray-400">Loan Tenure</span>
+                    <span className="text-xs font-bold text-white">{loanTenure} years</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] text-gray-400">Investment Required</span>
+                    <span className="text-xs font-bold text-amber-400">₹{property.investmentRequired.totalInvestment}L</span>
+                  </div>
+                </div>
+
+                {/* Area Prospects */}
+                <div className="mb-3">
+                  <p className="text-[10px] text-gray-400 mb-1">Area Prospects:</p>
+                  <div className="flex flex-wrap gap-1">
+                    {property.nearbyServices.metro < 2 && (
+                      <span className="text-[9px] px-1.5 py-0.5 bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 rounded">🚇 Metro</span>
+                    )}
+                    {property.nearbyServices.schools > 3 && (
+                      <span className="text-[9px] px-1.5 py-0.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded">🎓 Schools</span>
+                    )}
+                    {property.nearbyServices.hospitals > 2 && (
+                      <span className="text-[9px] px-1.5 py-0.5 bg-red-500/10 text-red-400 border border-red-500/20 rounded">🏥 Hospitals</span>
+                    )}
+                    {property.nearbyServices.markets > 5 && (
+                      <span className="text-[9px] px-1.5 py-0.5 bg-purple-500/10 text-purple-400 border border-purple-500/20 rounded">🛒 Markets</span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1">
+                  {property.reraVerified && (
+                    <span className="text-[10px] px-2 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full">
+                      ✓ RERA
+                    </span>
+                  )}
+                  <span className="text-[10px] px-2 py-0.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-full">
+                    {property.investmentMode}
+                  </span>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 

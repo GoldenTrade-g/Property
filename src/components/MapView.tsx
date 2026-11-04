@@ -312,26 +312,45 @@ export default function MapView() {
                 <p className="text-sm font-bold text-white">₹{selectedProperty.totalPrice}L</p>
               </div>
               <div className="p-3 bg-gray-800/50 rounded-lg">
-                <p className="text-[10px] text-gray-400">Rental Yield</p>
-                <p className="text-sm font-bold text-emerald-400">{selectedProperty.rentalYield}%</p>
-              </div>
-              <div className="p-3 bg-gray-800/50 rounded-lg">
                 <p className="text-[10px] text-gray-400">Monthly Rent</p>
-                <p className="text-sm font-bold text-cyan-400">₹{(selectedProperty.avgMonthlyRent).toLocaleString()}</p>
+                <p className="text-sm font-bold text-emerald-400">₹{selectedProperty.avgMonthlyRent.toLocaleString()}</p>
               </div>
               <div className="p-3 bg-gray-800/50 rounded-lg">
-                <p className="text-[10px] text-gray-400">Appreciation</p>
-                <p className="text-sm font-bold text-purple-400">{selectedProperty.appreciationRate}%/yr</p>
+                <p className="text-[10px] text-gray-400">Loan (80% / 15yr)</p>
+                <p className="text-sm font-bold text-cyan-400">₹{(selectedProperty.totalPrice * 0.8).toFixed(0)}L</p>
+              </div>
+              <div className="p-3 bg-gray-800/50 rounded-lg">
+                <p className="text-[10px] text-gray-400">Investment Req.</p>
+                <p className="text-sm font-bold text-amber-400">₹{selectedProperty.investmentRequired.totalInvestment}L</p>
               </div>
             </div>
 
             <div className="mb-4">
-              <p className="text-xs text-gray-400 mb-2">Nearby Demand Generators:</p>
-              <div className="flex flex-wrap gap-1">
-                {selectedProperty.demandGenerators.map((gen, i) => (
-                  <span key={i} className="text-[10px] px-2 py-1 bg-purple-500/10 text-purple-400 border border-purple-500/20 rounded-full">
-                    {gen}
-                  </span>
+              <p className="text-xs text-gray-400 mb-2">Nearby Services:</p>
+              <div className="grid grid-cols-3 gap-1 mb-2">
+                <div className="p-1.5 bg-blue-500/10 rounded text-center">
+                  <p className="text-xs font-bold text-blue-400">{selectedProperty.nearbyServices.schools}</p>
+                  <p className="text-[9px] text-gray-400">Schools</p>
+                </div>
+                <div className="p-1.5 bg-red-500/10 rounded text-center">
+                  <p className="text-xs font-bold text-red-400">{selectedProperty.nearbyServices.hospitals}</p>
+                  <p className="text-[9px] text-gray-400">Hospitals</p>
+                </div>
+                <div className="p-1.5 bg-cyan-500/10 rounded text-center">
+                  <p className="text-xs font-bold text-cyan-400">{selectedProperty.nearbyServices.metro}km</p>
+                  <p className="text-[9px] text-gray-400">Metro</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <p className="text-xs text-gray-400 mb-2">Area Prospects:</p>
+              <div className="space-y-1">
+                {selectedProperty.areaProspects.slice(0, 2).map((prospect, i) => (
+                  <div key={i} className="flex items-start gap-1">
+                    <span className="text-emerald-400 text-[10px] mt-0.5">✓</span>
+                    <p className="text-[10px] text-gray-300">{prospect}</p>
+                  </div>
                 ))}
               </div>
             </div>
