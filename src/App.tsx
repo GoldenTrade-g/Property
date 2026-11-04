@@ -8,7 +8,8 @@ import {
   TrendingUp,
   Menu,
   X,
-  Shield
+  Crown,
+  Check
 } from 'lucide-react';
 import Dashboard from './components/Dashboard';
 import PropertyScanner from './components/PropertyScanner';
@@ -21,6 +22,7 @@ type View = 'dashboard' | 'scanner' | 'calculator' | 'map' | 'direct';
 function App() {
   const [activeView, setActiveView] = useState<View>('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showPremiumModal, setShowPremiumModal] = useState(false);
 
   const navItems = [
     { id: 'dashboard' as View, label: 'Dashboard', icon: LayoutDashboard },
@@ -83,13 +85,16 @@ function App() {
         </nav>
 
         <div className="p-4 border-t border-gray-800">
-          <div className="bg-gradient-to-r from-emerald-500/10 to-cyan-500/10 border border-emerald-500/20 rounded-xl p-4">
+          <div className="bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 rounded-xl p-4">
             <div className="flex items-center gap-2 mb-2">
-              <Shield className="w-4 h-4 text-emerald-400" />
-              <span className="text-xs font-semibold text-emerald-400">PREMIUM</span>
+              <Crown className="w-4 h-4 text-amber-400" />
+              <span className="text-xs font-semibold text-amber-400">PREMIUM</span>
             </div>
             <p className="text-xs text-gray-300 mb-3">Unlock High ROI filters & pre-vetted legal papers</p>
-            <button className="w-full py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-semibold rounded-lg transition-colors">
+            <button 
+              onClick={() => setShowPremiumModal(true)}
+              className="w-full py-2 bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-white text-xs font-semibold rounded-lg transition-all"
+            >
               Upgrade ₹999/mo
             </button>
           </div>
@@ -136,6 +141,74 @@ function App() {
           {renderView()}
         </div>
       </main>
+
+      {/* Premium Modal */}
+      {showPremiumModal && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setShowPremiumModal(false)} />
+          <div className="relative bg-gray-900 border border-gray-800 rounded-2xl w-full max-w-lg p-8 max-h-[90vh] overflow-y-auto">
+            <button 
+              onClick={() => setShowPremiumModal(false)}
+              className="absolute top-4 right-4 w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center text-white hover:bg-gray-700"
+            >
+              <X className="w-4 h-4" />
+            </button>
+            
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center mx-auto mb-4">
+                <Crown className="w-8 h-8 text-white" />
+              </div>
+              <h2 className="text-xl font-bold text-white">PropIntel Premium</h2>
+              <p className="text-sm text-gray-400 mt-1">Everything you need to make smarter investment decisions</p>
+            </div>
+
+            <div className="space-y-3 mb-6">
+              {[
+                'High ROI property filters',
+                'Upcoming highway & metro master plans',
+                'Pre-vetted legal papers & RERA documents',
+                'Priority dealer connections',
+                'Advanced ROI projections (10-20 years)',
+                'Loan syndication with partner banks',
+                'Direct builder WhatsApp access',
+                'Monthly market intelligence reports',
+              ].map((feature, i) => (
+                <div key={i} className="flex items-center gap-3 p-2">
+                  <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                    <Check className="w-3 h-3 text-emerald-400" />
+                  </div>
+                  <span className="text-sm text-gray-300">{feature}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="bg-gray-800/50 rounded-xl p-4 mb-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-gray-400">Monthly Plan</p>
+                  <p className="text-2xl font-bold text-white">₹999<span className="text-sm text-gray-400">/month</span></p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-gray-400">Annual Plan</p>
+                  <p className="text-lg font-bold text-emerald-400">₹9,999<span className="text-xs text-gray-400">/year</span></p>
+                  <p className="text-[10px] text-emerald-400">Save ₹1,989</p>
+                </div>
+              </div>
+            </div>
+
+            <button 
+              onClick={() => {
+                alert('Payment gateway integration coming soon! You will be redirected to complete the subscription.');
+                setShowPremiumModal(false);
+              }}
+              className="w-full py-3 bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-white text-sm font-bold rounded-xl transition-all"
+            >
+              Start Premium Subscription
+            </button>
+            <p className="text-[10px] text-gray-500 text-center mt-3">Cancel anytime. No questions asked.</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

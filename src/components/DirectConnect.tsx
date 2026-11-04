@@ -9,13 +9,16 @@ import {
   Building2,
   User,
   Copy,
-  Check
+  Check,
+  Crown,
+  X
 } from 'lucide-react';
 import { properties } from '../data/properties';
 
 export default function DirectConnect() {
   const [searchQuery, setSearchQuery] = useState('');
   const [copiedNumber, setCopiedNumber] = useState<string | null>(null);
+  const [showPremiumModal, setShowPremiumModal] = useState(false);
 
   const filteredProperties = properties.filter(p => 
     p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -40,9 +43,9 @@ export default function DirectConnect() {
           <div>
             <h3 className="text-sm font-bold text-white mb-1">The "No-Broker" Command Center</h3>
             <p className="text-xs text-gray-300 leading-relaxed">
-              All contacts below are sourced directly from <span className="text-emerald-400 font-semibold">State RERA Portals</span> (UP-RERA, MahaRERA, etc.) 
-              and <span className="text-cyan-400 font-semibold">Google Places API</span>. RERA mandates official promoter phone numbers and registered agent 
-              details be public — bypassing portal call centers to connect you directly with builders/sales heads.
+              Connect directly with builders and registered agents — bypassing portal call centers. 
+              All contacts are <span className="text-emerald-400 font-semibold">RERA verified</span> with official 
+              promoter phone numbers and registered agent details.
             </p>
           </div>
         </div>
@@ -114,13 +117,13 @@ export default function DirectConnect() {
                     </div>
                     <div>
                       <p className="text-xs font-semibold text-white">Official Builder/Promoter</p>
-                      <p className="text-[10px] text-gray-400">Source: RERA Portal</p>
+                      <p className="text-[10px] text-gray-400">RERA Registered</p>
                     </div>
                   </div>
                   <p className="text-sm font-medium text-white mb-1">{property.builder}</p>
                   <div className="flex items-center gap-2 mb-3">
                     <Phone className="w-3 h-3 text-gray-400" />
-                    <span className="text-xs text-gray-300 font-mono">{property.builderPhone}</span>
+                    <span className="text-xs text-gray-300 font-mono">+{property.builderPhone}</span>
                     <button 
                       onClick={() => copyToClipboard(property.builderPhone)}
                       className="p-1 hover:bg-gray-700 rounded transition-colors"
@@ -135,7 +138,7 @@ export default function DirectConnect() {
                   <p className="text-[10px] text-gray-400 mb-3">RERA: {property.reraNumber}</p>
                   <div className="flex gap-2">
                     <a
-                      href={`https://wa.me/${property.builderPhone.replace(/[^0-9]/g, '')}`}
+                      href={`https://wa.me/${property.builderPhone}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-xs font-medium rounded-lg transition-colors"
@@ -144,7 +147,7 @@ export default function DirectConnect() {
                       WhatsApp
                     </a>
                     <a
-                      href={`tel:${property.builderPhone}`}
+                      href={`tel:+${property.builderPhone}`}
                       className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-lg transition-colors"
                     >
                       <Phone className="w-3.5 h-3.5" />
@@ -161,13 +164,13 @@ export default function DirectConnect() {
                     </div>
                     <div>
                       <p className="text-xs font-semibold text-white">Registered Dealer/Agent</p>
-                      <p className="text-[10px] text-gray-400">Source: RERA Agent Registry</p>
+                      <p className="text-[10px] text-gray-400">RERA Agent Registry</p>
                     </div>
                   </div>
                   <p className="text-sm font-medium text-white mb-1">{property.dealer}</p>
                   <div className="flex items-center gap-2 mb-3">
                     <Phone className="w-3 h-3 text-gray-400" />
-                    <span className="text-xs text-gray-300 font-mono">{property.dealerPhone}</span>
+                    <span className="text-xs text-gray-300 font-mono">+{property.dealerPhone}</span>
                     <button 
                       onClick={() => copyToClipboard(property.dealerPhone)}
                       className="p-1 hover:bg-gray-700 rounded transition-colors"
@@ -184,7 +187,7 @@ export default function DirectConnect() {
                   </p>
                   <div className="flex gap-2">
                     <a
-                      href={`https://wa.me/${property.dealerPhone.replace(/[^0-9]/g, '')}`}
+                      href={`https://wa.me/${property.dealerPhone}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-xs font-medium rounded-lg transition-colors"
@@ -193,7 +196,7 @@ export default function DirectConnect() {
                       WhatsApp
                     </a>
                     <a
-                      href={`tel:${property.dealerPhone}`}
+                      href={`tel:+${property.dealerPhone}`}
                       className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-lg transition-colors"
                     >
                       <Phone className="w-3.5 h-3.5" />
@@ -229,44 +232,119 @@ export default function DirectConnect() {
             <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center mx-auto mb-3">
               <span className="text-lg">1️⃣</span>
             </div>
-            <p className="text-xs text-gray-300">Property Scanner fetches listings from MagicBricks/99acres via Apify Actor</p>
+            <p className="text-xs text-gray-300">Browse verified property listings with real-time pricing</p>
           </div>
           <div className="text-center p-4">
             <div className="w-10 h-10 rounded-full bg-cyan-500/10 flex items-center justify-center mx-auto mb-3">
               <span className="text-lg">2️⃣</span>
             </div>
-            <p className="text-xs text-gray-300">Python script matches project name against State RERA databases</p>
+            <p className="text-xs text-gray-300">View official RERA-registered builder & agent contacts</p>
           </div>
           <div className="text-center p-4">
             <div className="w-10 h-10 rounded-full bg-purple-500/10 flex items-center justify-center mx-auto mb-3">
               <span className="text-lg">3️⃣</span>
             </div>
-            <p className="text-xs text-gray-300">RERA-mandated promoter phone numbers & agent details are extracted</p>
+            <p className="text-xs text-gray-300">One-tap WhatsApp or call — no middlemen or call centers</p>
           </div>
           <div className="text-center p-4">
             <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center mx-auto mb-3">
               <span className="text-lg">4️⃣</span>
             </div>
-            <p className="text-xs text-gray-300">Direct WhatsApp/Call buttons connect you without portal middlemen</p>
+            <p className="text-xs text-gray-300">Negotiate directly and close deals at the best price</p>
           </div>
         </div>
       </div>
 
-      {/* Monetization Note */}
+      {/* Premium Note */}
       <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center">
-            <span className="text-sm">💎</span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center">
+              <Crown className="w-4 h-4 text-amber-400" />
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-white">Premium Feature</p>
+              <p className="text-[11px] text-gray-400">
+                Direct Connect with verified RERA numbers is available for Premium users.
+              </p>
+            </div>
           </div>
-          <div>
-            <p className="text-xs font-semibold text-white">Premium Feature</p>
-            <p className="text-[11px] text-gray-400">
-              Direct Connect with verified RERA numbers is available for Premium users (₹999/month). 
-              Free users see masked numbers only.
-            </p>
-          </div>
+          <button 
+            onClick={() => setShowPremiumModal(true)}
+            className="px-4 py-2 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-xs font-bold rounded-lg hover:from-amber-500 hover:to-orange-600 transition-all"
+          >
+            Upgrade ₹999/mo
+          </button>
         </div>
       </div>
+
+      {/* Premium Modal */}
+      {showPremiumModal && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setShowPremiumModal(false)} />
+          <div className="relative bg-gray-900 border border-gray-800 rounded-2xl w-full max-w-lg p-8">
+            <button 
+              onClick={() => setShowPremiumModal(false)}
+              className="absolute top-4 right-4 w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center text-white hover:bg-gray-700"
+            >
+              <X className="w-4 h-4" />
+            </button>
+            
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center mx-auto mb-4">
+                <Crown className="w-8 h-8 text-white" />
+              </div>
+              <h2 className="text-xl font-bold text-white">PropIntel Premium</h2>
+              <p className="text-sm text-gray-400 mt-1">Unlock direct builder connections & advanced tools</p>
+            </div>
+
+            <div className="space-y-3 mb-6">
+              {[
+                'Direct WhatsApp access to builders',
+                'RERA-verified agent contacts',
+                'High ROI property filters',
+                'Upcoming infrastructure master plans',
+                'Pre-vetted legal papers',
+                'Advanced 10-20 year ROI projections',
+                'Loan syndication with partner banks',
+                'Monthly market intelligence reports',
+              ].map((feature, i) => (
+                <div key={i} className="flex items-center gap-3 p-2">
+                  <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                    <Check className="w-3 h-3 text-emerald-400" />
+                  </div>
+                  <span className="text-sm text-gray-300">{feature}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="bg-gray-800/50 rounded-xl p-4 mb-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-gray-400">Monthly Plan</p>
+                  <p className="text-2xl font-bold text-white">₹999<span className="text-sm text-gray-400">/month</span></p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-gray-400">Annual Plan</p>
+                  <p className="text-lg font-bold text-emerald-400">₹9,999<span className="text-xs text-gray-400">/year</span></p>
+                  <p className="text-[10px] text-emerald-400">Save ₹1,989</p>
+                </div>
+              </div>
+            </div>
+
+            <button 
+              onClick={() => {
+                alert('Payment gateway integration coming soon! You will be redirected to complete the subscription.');
+                setShowPremiumModal(false);
+              }}
+              className="w-full py-3 bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-white text-sm font-bold rounded-xl transition-all"
+            >
+              Start Premium Subscription
+            </button>
+            <p className="text-[10px] text-gray-500 text-center mt-3">Cancel anytime. No questions asked.</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

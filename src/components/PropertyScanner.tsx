@@ -75,11 +75,11 @@ export default function PropertyScanner() {
       {/* Last Scan Info */}
       <div className="flex items-center gap-2 px-4 py-2 bg-gray-900/50 border border-gray-800 rounded-xl">
         <Clock className="w-3.5 h-3.5 text-amber-400" />
-        <span className="text-xs text-gray-400">Last scan: 2 hours ago</span>
+        <span className="text-xs text-gray-400">Last updated: 2 hours ago</span>
         <span className="text-xs text-gray-600">|</span>
-        <span className="text-xs text-gray-400">Next scan in 4 hours</span>
+        <span className="text-xs text-gray-400">Auto-refreshes every 6 hours</span>
         <span className="text-xs text-gray-600">|</span>
-        <span className="text-xs text-emerald-400">Source: Apify Actor (magicbricks-99acres-scraper)</span>
+        <span className="text-xs text-emerald-400">{filteredProperties.length} live listings</span>
       </div>
 
       {/* Property Table */}
@@ -279,7 +279,7 @@ function PropertyDetailModal({ property, onClose }: { property: Property; onClos
               <p className="text-sm font-medium text-white">{property.builder}</p>
               <p className="text-xs text-gray-400 mb-3">RERA: {property.reraNumber}</p>
               <a 
-                href={`https://wa.me/${property.builderPhone.replace(/[^0-9]/g, '')}`}
+                href={`https://wa.me/${property.builderPhone}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-xs font-medium rounded-lg transition-colors"
@@ -292,7 +292,7 @@ function PropertyDetailModal({ property, onClose }: { property: Property; onClos
               <p className="text-sm font-medium text-white">{property.dealer}</p>
               <p className="text-xs text-gray-400 mb-3">Phone: {property.dealerPhone}</p>
               <a 
-                href={`https://wa.me/${property.dealerPhone.replace(/[^0-9]/g, '')}`}
+                href={`https://wa.me/${property.dealerPhone}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-xs font-medium rounded-lg transition-colors"

@@ -27,6 +27,8 @@ export interface Property {
   maintenanceCost: number; // annual in rupees
   avgMonthlyRent: number;
   imageGradient: string;
+  lat: number;
+  lng: number;
 }
 
 export const properties: Property[] = [
@@ -42,9 +44,9 @@ export const properties: Property[] = [
     type: 'Residential',
     investmentMode: 'PG',
     builder: 'Godrej Properties Ltd',
-    builderPhone: '+91-9810045678',
+    builderPhone: '919810045678',
     dealer: 'Sharma Estates (Verified)',
-    dealerPhone: '+91-9876543210',
+    dealerPhone: '919876543210',
     reraNumber: 'UPRERAPRJ7384',
     reraVerified: true,
     tower: 'Tower B',
@@ -66,6 +68,8 @@ export const properties: Property[] = [
     maintenanceCost: 36000,
     avgMonthlyRent: 8000,
     imageGradient: 'from-emerald-500 to-teal-600',
+    lat: 28.5700,
+    lng: 77.3200,
   },
   {
     id: 'P002',
@@ -79,9 +83,9 @@ export const properties: Property[] = [
     type: 'Commercial',
     investmentMode: 'Industrial',
     builder: 'DLF Ltd',
-    builderPhone: '+91-9810056789',
+    builderPhone: '919810056789',
     dealer: 'Prime Commercial Realty',
-    dealerPhone: '+91-9876512340',
+    dealerPhone: '919876512340',
     reraNumber: 'HRERAPRJ9823',
     reraVerified: true,
     tower: 'Tower 5',
@@ -103,6 +107,8 @@ export const properties: Property[] = [
     maintenanceCost: 96000,
     avgMonthlyRent: 195000,
     imageGradient: 'from-blue-500 to-indigo-600',
+    lat: 28.4949,
+    lng: 77.0865,
   },
   {
     id: 'P003',
@@ -116,9 +122,9 @@ export const properties: Property[] = [
     type: 'Warehouse',
     investmentMode: 'Logistics',
     builder: 'Logos India',
-    builderPhone: '+91-9810067890',
+    builderPhone: '919810067890',
     dealer: 'Industrial Spaces India',
-    dealerPhone: '+91-9876598765',
+    dealerPhone: '919876598765',
     reraNumber: 'RJREPRJ4521',
     reraVerified: true,
     tower: 'Block C',
@@ -140,6 +146,8 @@ export const properties: Property[] = [
     maintenanceCost: 72000,
     avgMonthlyRent: 285000,
     imageGradient: 'from-orange-500 to-red-600',
+    lat: 28.2000,
+    lng: 76.8700,
   },
   {
     id: 'P004',
@@ -153,9 +161,9 @@ export const properties: Property[] = [
     type: 'Residential',
     investmentMode: 'PG',
     builder: 'Prestige Group',
-    builderPhone: '+91-9810078901',
+    builderPhone: '919810078901',
     dealer: 'Bangalore Home Deals',
-    dealerPhone: '+91-9876511223',
+    dealerPhone: '919876511223',
     reraNumber: 'PRM/KA/RERA/1251/309/PR/180423/000572',
     reraVerified: true,
     tower: 'Tower 7',
@@ -177,6 +185,8 @@ export const properties: Property[] = [
     maintenanceCost: 42000,
     avgMonthlyRent: 72000,
     imageGradient: 'from-purple-500 to-pink-600',
+    lat: 12.9698,
+    lng: 77.7500,
   },
   {
     id: 'P005',
@@ -190,9 +200,9 @@ export const properties: Property[] = [
     type: 'Residential',
     investmentMode: 'Residential',
     builder: 'Tata Housing',
-    builderPhone: '+91-9810089012',
+    builderPhone: '919810089012',
     dealer: 'NCR Property Hub',
-    dealerPhone: '+91-9876533445',
+    dealerPhone: '919876533445',
     reraNumber: 'UPRERAPRJ8912',
     reraVerified: true,
     tower: 'Tower A',
@@ -214,6 +224,8 @@ export const properties: Property[] = [
     maintenanceCost: 30000,
     avgMonthlyRent: 33000,
     imageGradient: 'from-cyan-500 to-blue-600',
+    lat: 28.4800,
+    lng: 77.4500,
   },
   {
     id: 'P006',
@@ -227,9 +239,9 @@ export const properties: Property[] = [
     type: 'Industrial',
     investmentMode: 'Industrial',
     builder: 'MIDC Authorized',
-    builderPhone: '+91-9810090123',
+    builderPhone: '919810090123',
     dealer: 'Pune Industrial Realty',
-    dealerPhone: '+91-9876544556',
+    dealerPhone: '919876544556',
     reraNumber: 'MHREPRJ6734',
     reraVerified: true,
     tower: 'Plot 45',
@@ -251,6 +263,8 @@ export const properties: Property[] = [
     maintenanceCost: 48000,
     avgMonthlyRent: 175000,
     imageGradient: 'from-amber-500 to-orange-600',
+    lat: 18.7725,
+    lng: 73.8526,
   },
 ];
 
@@ -290,10 +304,10 @@ export const investmentModes = [
 ];
 
 export const mapZones = [
-  { id: 1, name: 'Noida SEZ', type: 'green', label: 'High Rental Demand', x: 65, y: 35, radius: 40 },
-  { id: 2, name: 'Jewar Airport Corridor', type: 'blue', label: 'Upcoming Infrastructure', x: 75, y: 60, radius: 35 },
-  { id: 3, name: 'Greater Noida West', type: 'red', label: 'Litigation Alert', x: 80, y: 25, radius: 25 },
-  { id: 4, name: 'Gurugram Cyber City', type: 'green', label: 'High Rental Demand', x: 30, y: 40, radius: 38 },
-  { id: 5, name: 'Dwarka Expressway', type: 'blue', label: 'Upcoming Metro', x: 25, y: 55, radius: 30 },
-  { id: 6, name: 'Bhiwadi Industrial', type: 'green', label: 'High Industrial Demand', x: 40, y: 70, radius: 32 },
+  { id: 1, name: 'Noida SEZ', type: 'green', label: 'High Rental Demand', lat: 28.5700, lng: 77.3200, radius: 3000 },
+  { id: 2, name: 'Jewar Airport Corridor', type: 'blue', label: 'Upcoming Infrastructure', lat: 28.4800, lng: 77.5500, radius: 5000 },
+  { id: 3, name: 'Greater Noida West', type: 'red', label: 'Litigation Alert', lat: 28.5900, lng: 77.4200, radius: 2500 },
+  { id: 4, name: 'Gurugram Cyber City', type: 'green', label: 'High Rental Demand', lat: 28.4949, lng: 77.0865, radius: 3000 },
+  { id: 5, name: 'Dwarka Expressway', type: 'blue', label: 'Upcoming Metro', lat: 28.5500, lng: 76.9500, radius: 4000 },
+  { id: 6, name: 'Bhiwadi Industrial', type: 'green', label: 'High Industrial Demand', lat: 28.2000, lng: 76.8700, radius: 3500 },
 ];

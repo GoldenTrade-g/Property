@@ -5,10 +5,13 @@ import {
   IndianRupee, 
   AlertCircle,
   CheckCircle,
-  Info
+  Info,
+  Download,
+  FileSpreadsheet
 } from 'lucide-react';
 import { BarChart, Bar, LineChart, Line, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { properties } from '../data/properties';
+import * as XLSX from 'xlsx';
 
 export default function ROICalculator() {
   const [selectedPropertyId, setSelectedPropertyId] = useState(properties[0].id);
@@ -29,15 +32,16 @@ export default function ROICalculator() {
     // EMI Calculation
     const r = interestRate / (12 * 100);
     const n = loanTenure * 12;
-    const emi = loanAmount * (r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+    const emi = loanAmount > 0 ? loanAmount * (r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1) : 0;
     
     const annualRent = monthlyRent * 12;
     const annualEMI = emi * 12;
     const vacancyCost = annualRent * (selectedProperty.vacancyRate / 100);
     const operatingExpenses = selectedProperty.propertyTax + selectedProperty.maintenanceCost;
     
-    const netCashFlow = annualRent - vacancyCost - annualEMI - operatingExpenses;
-    const cashOnCashROI = (netCashFlow / downPayment) * 100;
+    const netAnnualCashFlow = annualRent - vacancyCost - annualEMI - operatingExpenses;
+    const netMonthlyCashFlow = netAnnualCashFlow / 12;
+    const cashOnCashROI = (netAnnualCashFlow / downPayment) * 100;
     const grossYield = (annualRent / totalCost) * 100;
 
     // 10-year projection
@@ -55,10 +59,15 @@ export default function ROICalculator() {
       
       projection.push({
         year: `Yr ${year}`,
+        yearNum: year,
         cashFlow: Math.round(yearNet / 100000),
+        monthlyCashFlow: Math.round(yearNet / 12),
         cumulative: Math.round(cumulativeCashFlow / 100000),
         propertyValue: Math.round(propertyValue / 100000),
         rent: Math.round(currentRent),
+        annualRent: Math.round(yearRent),
+        emi: Math.round(annualEMI),
+        expenses: Math.round(vacancyCost + operatingExpenses),
       });
       
       currentRent *= 1.05; // 5% annual rent increase
@@ -74,7 +83,8 @@ export default function ROICalculator() {
       annualEMI,
       vacancyCost,
       operatingExpenses,
-      netCashFlow,
+      netAnnualCashFlow,
+      netMonthlyCashFlow,
       cashOnCashROI,
       grossYield,
       projection,
@@ -94,14 +104,93 @@ export default function ROICalculator() {
     return `₹${value.toLocaleString('en-IN')}`;
   };
 
+  const exportToExcel = () => {
+    // Create workbook
+    const wb = XLSX.utils.book_new();
+
+    // Summary Sheet
+    const summaryData = [
+      ['PropIntel - ROI Calculation Report'],
+      [''],
+      ['Property Details'],
+      ['Property Name', selectedProperty.name],
+      ['Location', selectedProperty.location],
+      ['City', selectedProperty.city],
+      ['Type', selectedProperty.type],
+      ['Investment Mode', selectedProperty.investmentMode],
+      [''],
+      ['Input Parameters'],
+      ['Property Cost', propertyCost],
+      ['Stamp Duty (7%)', calculations.stampDuty],
+      ['Total Cost', calculations.totalCost],
+      ['Loan Percentage', `${loanPercentage}%`],
+      ['Loan Amount', calculations.loanAmount],
+      ['Down Payment + Registration', calculations.downPayment],
+      ['Interest Rate', `${interestRate}%`],
+      ['Loan Tenure', `${loanTenure} years`],
+      ['Monthly EMI', calculations.emi],
+      ['Expected Monthly Rent', monthlyRent],
+      [''],
+      ['Financial Summary'],
+      ['Annual Rent Income', calculations.annualRent],
+      ['Annual EMI Outflow', calculations.annualEMI],
+      ['Vacancy Cost (Annual)', calculations.vacancyCost],
+      ['Operating Expenses (Annual)', calculations.operatingExpenses],
+      ['Net Annual Cash Flow', calculations.netAnnualCashFlow],
+      ['Net Monthly Cash Flow', calculations.netMonthlyCashFlow],
+      ['Gross Rental Yield', `${calculations.grossYield.toFixed(2)}%`],
+      ['Cash-on-Cash ROI', `${calculations.cashOnCashROI.toFixed(2)}%`],
+      [''],
+      ['10-Year Projection'],
+      ['Year', 'Monthly Rent', 'Annual Rent', 'Annual EMI', 'Expenses', 'Annual Cash Flow', 'Monthly Cash Flow', 'Cumulative (₹L)', 'Property Value (₹L)'],
+    ];
+
+    // Add projection data
+    calculations.projection.forEach(p => {
+      summaryData.push([
+        p.year,
+        p.rent,
+        p.annualRent,
+        p.emi,
+        p.expenses,
+        p.cashFlow * 100000,
+        p.monthlyCashFlow,
+        p.cumulative,
+        p.propertyValue,
+      ]);
+    });
+
+    const ws = XLSX.utils.aoa_to_sheet(summaryData);
+    
+    // Set column widths
+    ws['!cols'] = [
+      { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, 
+      { wch: 15 }, { wch: 18 }, { wch: 18 }, { wch: 18 }, { wch: 18 }
+    ];
+
+    XLSX.utils.book_append_sheet(wb, ws, 'ROI Analysis');
+
+    // Download
+    XLSX.writeFile(wb, `PropIntel_ROI_${selectedProperty.name.replace(/\s+/g, '_')}.xlsx`);
+  };
+
   return (
     <div className="space-y-6">
       {/* Property Selection */}
       <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
-        <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
-          <Calculator className="w-4 h-4 text-emerald-400" />
-          Select Property for ROI Analysis
-        </h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-sm font-bold text-white flex items-center gap-2">
+            <Calculator className="w-4 h-4 text-emerald-400" />
+            Select Property for ROI Analysis
+          </h3>
+          <button
+            onClick={exportToExcel}
+            className="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg text-xs font-medium hover:bg-emerald-500/20 transition-colors"
+          >
+            <FileSpreadsheet className="w-4 h-4" />
+            Export to Excel
+          </button>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {properties.map((prop) => (
             <button
@@ -115,7 +204,7 @@ export default function ROICalculator() {
             >
               <p className="text-xs font-medium text-white truncate">{prop.name}</p>
               <p className="text-[10px] text-gray-400">{prop.location}</p>
-              <p className="text-xs font-bold text-emerald-400 mt-1">Yield: {prop.rentalYield}%</p>
+              <p className="text-xs font-bold text-emerald-400 mt-1">Monthly Return: ₹{prop.avgMonthlyRent.toLocaleString()}</p>
             </button>
           ))}
         </div>
@@ -231,7 +320,7 @@ export default function ROICalculator() {
             </div>
             <p className="text-[10px] text-cyan-400 mt-1 flex items-center gap-1">
               <Info className="w-3 h-3" />
-              Area avg: {formatCurrency(selectedProperty.avgMonthlyRent)}/month for this location
+              Area average: {formatCurrency(selectedProperty.avgMonthlyRent)}/month for this location
             </p>
           </div>
         </div>
@@ -258,45 +347,49 @@ export default function ROICalculator() {
               <p className="text-sm font-bold text-amber-400">{formatCurrency(calculations.emi)}</p>
             </div>
             <div className="p-3 bg-gray-800/50 rounded-xl">
+              <p className="text-[10px] text-gray-400">Monthly Rent Income</p>
+              <p className="text-sm font-bold text-emerald-400">{formatCurrency(monthlyRent)}</p>
+            </div>
+            <div className="p-3 bg-gray-800/50 rounded-xl">
               <p className="text-[10px] text-gray-400">Annual Rent Income</p>
               <p className="text-sm font-bold text-emerald-400">{formatCurrency(calculations.annualRent)}</p>
             </div>
-            <div className="p-3 bg-gray-800/50 rounded-xl">
-              <p className="text-[10px] text-gray-400">Annual EMI Outflow</p>
-              <p className="text-sm font-bold text-red-400">{formatCurrency(calculations.annualEMI)}</p>
-            </div>
-            <div className="p-3 bg-gray-800/50 rounded-xl">
-              <p className="text-[10px] text-gray-400">Vacancy + Ops Cost</p>
-              <p className="text-sm font-bold text-red-400">{formatCurrency(calculations.vacancyCost + calculations.operatingExpenses)}</p>
-            </div>
-            <div className="p-3 bg-gray-800/50 rounded-xl">
-              <p className="text-[10px] text-gray-400">Gross Rental Yield</p>
-              <p className="text-sm font-bold text-cyan-400">{calculations.grossYield.toFixed(1)}%</p>
-            </div>
           </div>
 
-          {/* Net Cash Flow & ROI */}
+          {/* Monthly & Annual Cash Flow - Prominent Display */}
           <div className={`p-4 rounded-xl border ${
-            calculations.netCashFlow >= 0 
+            calculations.netMonthlyCashFlow >= 0 
               ? 'bg-emerald-500/5 border-emerald-500/20' 
               : 'bg-red-500/5 border-red-500/20'
           }`}>
-            <div className="flex items-center gap-2 mb-2">
-              {calculations.netCashFlow >= 0 ? (
+            <div className="flex items-center gap-2 mb-3">
+              {calculations.netMonthlyCashFlow >= 0 ? (
                 <CheckCircle className="w-4 h-4 text-emerald-400" />
               ) : (
                 <AlertCircle className="w-4 h-4 text-red-400" />
               )}
-              <span className="text-xs font-semibold text-white">Net Annual Cash Flow</span>
+              <span className="text-xs font-semibold text-white">Net Cash Flow</span>
             </div>
-            <p className={`text-2xl font-bold ${calculations.netCashFlow >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-              {formatCurrency(calculations.netCashFlow)}
-            </p>
-            <p className="text-xs text-gray-400 mt-1">
-              {calculations.netCashFlow >= 0 ? 'Positive cash flow — property pays for itself' : 'Negative cash flow — requires monthly subsidy'}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-[10px] text-gray-400 mb-1">Monthly Return</p>
+                <p className={`text-xl font-bold ${calculations.netMonthlyCashFlow >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                  {formatCurrency(calculations.netMonthlyCashFlow)}
+                </p>
+              </div>
+              <div>
+                <p className="text-[10px] text-gray-400 mb-1">Annual Return</p>
+                <p className={`text-xl font-bold ${calculations.netAnnualCashFlow >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                  {formatCurrency(calculations.netAnnualCashFlow)}
+                </p>
+              </div>
+            </div>
+            <p className="text-xs text-gray-400 mt-2">
+              {calculations.netMonthlyCashFlow >= 0 ? '✓ Property generates positive cash flow after all expenses' : '⚠️ Requires monthly subsidy from other income'}
             </p>
           </div>
 
+          {/* ROI Display */}
           <div className={`p-4 rounded-xl border ${
             calculations.cashOnCashROI >= 5 
               ? 'bg-emerald-500/5 border-emerald-500/20' 
@@ -313,10 +406,13 @@ export default function ROICalculator() {
                 }`}>
                   {calculations.cashOnCashROI.toFixed(2)}%
                 </p>
+                <p className="text-[10px] text-gray-400 mt-1">
+                  = (Annual Return ₹{formatCurrency(calculations.netAnnualCashFlow)} ÷ Cash Invested ₹{formatCurrency(calculations.downPayment)}) × 100
+                </p>
               </div>
               <div className="text-right">
                 <p className="text-[10px] text-gray-400">Verdict</p>
-                <p className={`text-xs font-bold ${
+                <p className={`text-sm font-bold ${
                   calculations.cashOnCashROI >= 8 ? 'text-emerald-400' : 
                   calculations.cashOnCashROI >= 5 ? 'text-amber-400' : 'text-red-400'
                 }`}>
@@ -327,15 +423,32 @@ export default function ROICalculator() {
               </div>
             </div>
           </div>
+
+          {/* Export Button */}
+          <button
+            onClick={exportToExcel}
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-xl text-sm font-medium hover:bg-emerald-500/20 transition-colors"
+          >
+            <Download className="w-4 h-4" />
+            Download Full Calculation (Excel)
+          </button>
         </div>
       </div>
 
       {/* 10-Year Projection Chart */}
       <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
-        <h3 className="text-sm font-bold text-white mb-2 flex items-center gap-2">
-          <TrendingUp className="w-4 h-4 text-emerald-400" />
-          10-Year Projection (with 5% annual rent increase)
-        </h3>
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-sm font-bold text-white flex items-center gap-2">
+            <TrendingUp className="w-4 h-4 text-emerald-400" />
+            10-Year Cash Flow Projection (5% annual rent increase)
+          </h3>
+          <button
+            onClick={exportToExcel}
+            className="flex items-center gap-1 px-3 py-1.5 bg-gray-800 text-gray-300 rounded-lg text-xs hover:bg-gray-700 transition-colors"
+          >
+            <Download className="w-3 h-3" /> Export
+          </button>
+        </div>
         <p className="text-xs text-gray-400 mb-4">
           EMI stays flat while rent increases — cash flow improves significantly over time
         </p>
@@ -348,10 +461,13 @@ export default function ROICalculator() {
               <Tooltip 
                 contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151', borderRadius: '8px' }}
                 labelStyle={{ color: '#9ca3af' }}
-                formatter={(value: number, name: string) => [`₹${value}L`, name === 'cashFlow' ? 'Annual Cash Flow' : name === 'cumulative' ? 'Cumulative' : 'Property Value']}
+                formatter={(value: number, name: string) => {
+                  if (name === 'cashFlow') return [`₹${value}L/yr`, 'Annual Cash Flow'];
+                  return [`₹${value}L`, 'Cumulative'];
+                }}
               />
-              <Bar dataKey="cashFlow" fill="#10b981" radius={[4, 4, 0, 0]} name="Annual Cash Flow" />
-              <Bar dataKey="cumulative" fill="#06b6d4" radius={[4, 4, 0, 0]} name="Cumulative Cash Flow" />
+              <Bar dataKey="cashFlow" fill="#10b981" radius={[4, 4, 0, 0]} name="cashFlow" />
+              <Bar dataKey="cumulative" fill="#06b6d4" radius={[4, 4, 0, 0]} name="cumulative" />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -381,6 +497,53 @@ export default function ROICalculator() {
               <Line type="monotone" dataKey="propertyValue" stroke="#a855f7" strokeWidth={2} dot={{ fill: '#a855f7', r: 3 }} />
             </LineChart>
           </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Year-by-Year Table */}
+      <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-sm font-bold text-white">📊 Year-by-Year Breakdown</h3>
+          <button
+            onClick={exportToExcel}
+            className="flex items-center gap-1 px-3 py-1.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg text-xs hover:bg-emerald-500/20 transition-colors"
+          >
+            <FileSpreadsheet className="w-3 h-3" /> Download Excel
+          </button>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="border-b border-gray-800">
+                <th className="text-left py-2 px-3 text-gray-400 font-medium">Year</th>
+                <th className="text-right py-2 px-3 text-gray-400 font-medium">Monthly Rent</th>
+                <th className="text-right py-2 px-3 text-gray-400 font-medium">Annual Rent</th>
+                <th className="text-right py-2 px-3 text-gray-400 font-medium">Annual EMI</th>
+                <th className="text-right py-2 px-3 text-gray-400 font-medium">Expenses</th>
+                <th className="text-right py-2 px-3 text-gray-400 font-medium">Net Annual</th>
+                <th className="text-right py-2 px-3 text-gray-400 font-medium">Net Monthly</th>
+                <th className="text-right py-2 px-3 text-gray-400 font-medium">Property Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              {calculations.projection.map((row) => (
+                <tr key={row.year} className="border-b border-gray-800/50 hover:bg-gray-800/30">
+                  <td className="py-2 px-3 text-white font-medium">{row.year}</td>
+                  <td className="py-2 px-3 text-right text-gray-300">₹{row.rent.toLocaleString()}</td>
+                  <td className="py-2 px-3 text-right text-emerald-400">₹{(row.annualRent / 100000).toFixed(1)}L</td>
+                  <td className="py-2 px-3 text-right text-red-400">₹{(row.emi / 100000).toFixed(1)}L</td>
+                  <td className="py-2 px-3 text-right text-amber-400">₹{(row.expenses / 100000).toFixed(1)}L</td>
+                  <td className={`py-2 px-3 text-right font-medium ${row.cashFlow >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                    ₹{row.cashFlow}L
+                  </td>
+                  <td className={`py-2 px-3 text-right font-medium ${row.monthlyCashFlow >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                    ₹{row.monthlyCashFlow.toLocaleString()}
+                  </td>
+                  <td className="py-2 px-3 text-right text-purple-400">₹{row.propertyValue}L</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
 

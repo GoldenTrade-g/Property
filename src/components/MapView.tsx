@@ -1,50 +1,125 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import { 
-  MapPin, 
-  AlertTriangle, 
-  TrendingUp, 
-  Building2,
   Layers,
-  Info
+  MapPin
 } from 'lucide-react';
-import { mapZones, properties } from '../data/properties';
+import { mapZones, properties, Property } from '../data/properties';
 
 type ZoneType = 'all' | 'green' | 'blue' | 'red';
 
 export default function MapView() {
+  const mapRef = useRef<HTMLDivElement>(null);
+  const mapInstanceRef = useRef<L.Map | null>(null);
   const [activeFilter, setActiveFilter] = useState<ZoneType>('all');
-  const [hoveredZone, setHoveredZone] = useState<number | null>(null);
+  const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
 
-  const filteredZones = activeFilter === 'all' 
-    ? mapZones 
-    : mapZones.filter(z => z.type === activeFilter);
+  useEffect(() => {
+    if (!mapRef.current || mapInstanceRef.current) return;
 
-  const getZoneColor = (type: string) => {
-    switch (type) {
-      case 'green': return 'rgba(16, 185, 129, 0.3)';
-      case 'blue': return 'rgba(6, 182, 212, 0.3)';
-      case 'red': return 'rgba(239, 68, 68, 0.3)';
-      default: return 'rgba(16, 185, 129, 0.3)';
-    }
-  };
+    // Initialize map centered on NCR region
+    const map = L.map(mapRef.current, {
+      center: [28.45, 77.1],
+      zoom: 9,
+      zoomControl: true,
+    });
 
-  const getZoneBorder = (type: string) => {
-    switch (type) {
-      case 'green': return 'rgba(16, 185, 129, 0.6)';
-      case 'blue': return 'rgba(6, 182, 212, 0.6)';
-      case 'red': return 'rgba(239, 68, 68, 0.6)';
-      default: return 'rgba(16, 185, 129, 0.6)';
-    }
-  };
+    // OpenStreetMap tiles (free, no API key)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors',
+      maxZoom: 19,
+    }).addTo(map);
 
-  const getZoneLabel = (type: string) => {
-    switch (type) {
-      case 'green': return 'High Demand';
-      case 'blue': return 'Upcoming Infra';
-      case 'red': return 'Risk Zone';
-      default: return '';
-    }
-  };
+    mapInstanceRef.current = map;
+
+    return () => {
+      map.remove();
+      mapInstanceRef.current = null;
+    };
+  }, []);
+
+  // Update overlays when filter changes
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+
+    // Clear existing layers (except tile layer)
+    map.eachLayer((layer) => {
+      if (!(layer instanceof L.TileLayer)) {
+        map.removeLayer(layer);
+      }
+    });
+
+    const filteredZones = activeFilter === 'all' 
+      ? mapZones 
+      : mapZones.filter(z => z.type === activeFilter);
+
+    // Add zone circles
+    filteredZones.forEach((zone) => {
+      const color = zone.type === 'green' ? '#10b981' : 
+                    zone.type === 'blue' ? '#06b6d4' : '#ef4444';
+      
+      const circle = L.circle([zone.lat, zone.lng], {
+        radius: zone.radius,
+        color: color,
+        fillColor: color,
+        fillOpacity: 0.2,
+        weight: 2,
+      }).addTo(map);
+
+      circle.bindPopup(`
+        <div style="font-family: system-ui; padding: 4px;">
+          <strong style="font-size: 13px;">${zone.name}</strong><br/>
+          <span style="font-size: 11px; color: #6b7280;">${zone.label}</span>
+        </div>
+      `);
+    });
+
+    // Add property markers
+    properties.forEach((prop) => {
+      const iconColor = prop.type === 'Warehouse' ? '#f97316' : 
+                        prop.type === 'Industrial' ? '#eab308' : 
+                        prop.type === 'Commercial' ? '#3b82f6' : '#10b981';
+      
+      const icon = L.divIcon({
+        className: 'custom-marker',
+        html: `<div style="
+          width: 32px; 
+          height: 32px; 
+          background: ${iconColor}; 
+          border-radius: 50%; 
+          border: 3px solid white;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 14px;
+          cursor: pointer;
+        ">${prop.type === 'Warehouse' ? '🏗️' : prop.type === 'Industrial' ? '🏭' : prop.type === 'Commercial' ? '🏢' : '🏠'}</div>`,
+        iconSize: [32, 32],
+        iconAnchor: [16, 16],
+      });
+
+      const marker = L.marker([prop.lat, prop.lng], { icon }).addTo(map);
+      
+      marker.bindPopup(`
+        <div style="font-family: system-ui; padding: 4px; min-width: 200px;">
+          <strong style="font-size: 13px;">${prop.name}</strong><br/>
+          <span style="font-size: 11px; color: #6b7280;">${prop.location}</span><br/>
+          <div style="margin-top: 8px; display: flex; gap: 8px;">
+            <span style="font-size: 11px; background: #f0fdf4; color: #16a34a; padding: 2px 6px; border-radius: 4px;">₹${prop.totalPrice}L</span>
+            <span style="font-size: 11px; background: #ecfdf5; color: #059669; padding: 2px 6px; border-radius: 4px;">${prop.rentalYield}% yield</span>
+          </div>
+        </div>
+      `);
+
+      marker.on('click', () => {
+        setSelectedProperty(prop);
+      });
+    });
+
+  }, [activeFilter]);
 
   return (
     <div className="space-y-6">
@@ -54,9 +129,9 @@ export default function MapView() {
           <div>
             <h3 className="text-sm font-bold text-white flex items-center gap-2">
               <Layers className="w-4 h-4 text-emerald-400" />
-              Smart Investment Map — NCR Region
+              Interactive Investment Map
             </h3>
-            <p className="text-xs text-gray-400 mt-1">Color-coded heatmap showing demand zones, infrastructure & risk areas</p>
+            <p className="text-xs text-gray-400 mt-1">Click markers to view property details. Filter by zone type below.</p>
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -73,7 +148,7 @@ export default function MapView() {
                 activeFilter === 'green' ? 'bg-emerald-500 text-white' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
               }`}
             >
-              <span className="w-2 h-2 bg-emerald-400 rounded-full" /> Green
+              <span className="w-2 h-2 bg-emerald-400 rounded-full" /> High Demand
             </button>
             <button
               onClick={() => setActiveFilter('blue')}
@@ -81,7 +156,7 @@ export default function MapView() {
                 activeFilter === 'blue' ? 'bg-cyan-500 text-white' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
               }`}
             >
-              <span className="w-2 h-2 bg-cyan-400 rounded-full" /> Blue
+              <span className="w-2 h-2 bg-cyan-400 rounded-full" /> Upcoming
             </button>
             <button
               onClick={() => setActiveFilter('red')}
@@ -89,7 +164,7 @@ export default function MapView() {
                 activeFilter === 'red' ? 'bg-red-500 text-white' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
               }`}
             >
-              <span className="w-2 h-2 bg-red-400 rounded-full" /> Red
+              <span className="w-2 h-2 bg-red-400 rounded-full" /> Risk
             </button>
           </div>
         </div>
@@ -98,147 +173,68 @@ export default function MapView() {
         <div className="flex flex-wrap gap-4 mt-4 pt-4 border-t border-gray-800">
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded-full bg-emerald-500/30 border border-emerald-500/60" />
-            <span className="text-xs text-gray-400">High Rental Demand / Low Vacancy</span>
+            <span className="text-xs text-gray-400">High Rental Demand</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded-full bg-cyan-500/30 border border-cyan-500/60" />
-            <span className="text-xs text-gray-400">Upcoming Infrastructure (Metro/Airport)</span>
+            <span className="text-xs text-gray-400">Upcoming Infrastructure</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded-full bg-red-500/30 border border-red-500/60" />
-            <span className="text-xs text-gray-400">Legal Litigation / Acquisition Risk</span>
+            <span className="text-xs text-gray-400">Risk Zone</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded-full bg-blue-500" />
+            <span className="text-xs text-gray-400">Commercial</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded-full bg-amber-500" />
+            <span className="text-xs text-gray-400">Industrial</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded-full bg-orange-500" />
+            <span className="text-xs text-gray-400">Warehouse</span>
           </div>
         </div>
       </div>
 
-      {/* Map Visualization */}
+      {/* Map Container */}
+      <div className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden">
+        <div 
+          ref={mapRef} 
+          className="w-full h-[550px]"
+          style={{ zIndex: 1 }}
+        />
+      </div>
+
+      {/* Property List Below Map */}
       <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
-        <div className="relative w-full h-[500px] bg-gray-800/30 rounded-xl overflow-hidden border border-gray-700">
-          {/* Grid Background */}
-          <svg className="absolute inset-0 w-full h-full opacity-10">
-            <defs>
-              <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#6b7280" strokeWidth="0.5" />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#grid)" />
-          </svg>
-
-          {/* Roads/Highways */}
-          <svg className="absolute inset-0 w-full h-full">
-            {/* NH-48 */}
-            <line x1="10%" y1="80%" x2="90%" y2="20%" stroke="#4b5563" strokeWidth="2" strokeDasharray="8 4" />
-            <text x="50%" y="48%" fill="#6b7280" fontSize="10" textAnchor="middle">NH-48</text>
-            
-            {/* Yamuna Expressway */}
-            <line x1="70%" y1="30%" x2="85%" y2="80%" stroke="#4b5563" strokeWidth="2" strokeDasharray="8 4" />
-            <text x="80%" y="55%" fill="#6b7280" fontSize="10" textAnchor="middle">Yamuna Exp.</text>
-            
-            {/* Dwarka Expressway */}
-            <line x1="15%" y1="40%" x2="35%" y2="65%" stroke="#4b5563" strokeWidth="2" strokeDasharray="8 4" />
-            <text x="22%" y="55%" fill="#6b7280" fontSize="10" textAnchor="middle">Dwarka Exp.</text>
-
-            {/* Metro Line */}
-            <line x1="30%" y1="30%" x2="70%" y2="50%" stroke="#6366f1" strokeWidth="1.5" strokeDasharray="4 2" />
-            <text x="50%" y="38%" fill="#818cf8" fontSize="9" textAnchor="middle">🚇 Metro Extension</text>
-          </svg>
-
-          {/* Zone Circles */}
-          {filteredZones.map((zone) => (
-            <div
-              key={zone.id}
-              className="absolute transform -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-all duration-300"
-              style={{ 
-                left: `${zone.x}%`, 
-                top: `${zone.y}%`,
-              }}
-              onMouseEnter={() => setHoveredZone(zone.id)}
-              onMouseLeave={() => setHoveredZone(null)}
+        <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
+          <MapPin className="w-4 h-4 text-emerald-400" />
+          Properties on Map ({properties.length})
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          {properties.map((prop) => (
+            <button
+              key={prop.id}
+              onClick={() => setSelectedProperty(prop)}
+              className="p-3 bg-gray-800/50 border border-gray-700 rounded-xl hover:border-emerald-500/30 transition-colors text-left"
             >
-              <div 
-                className="rounded-full transition-all duration-300"
-                style={{ 
-                  width: `${zone.radius * 2}px`, 
-                  height: `${zone.radius * 2}px`,
-                  backgroundColor: getZoneColor(zone.type),
-                  border: `2px solid ${getZoneBorder(zone.type)}`,
-                  transform: hoveredZone === zone.id ? 'scale(1.1)' : 'scale(1)',
-                }}
-              >
-                <div className="w-full h-full flex items-center justify-center">
-                  <div className="text-center">
-                    <MapPin className={`w-4 h-4 mx-auto mb-0.5 ${
-                      zone.type === 'green' ? 'text-emerald-400' : 
-                      zone.type === 'blue' ? 'text-cyan-400' : 'text-red-400'
-                    }`} />
-                    <span className="text-[9px] text-white font-medium whitespace-nowrap">{zone.name}</span>
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${prop.imageGradient} flex items-center justify-center text-lg shrink-0`}>
+                  {prop.type === 'Warehouse' ? '🏗️' : prop.type === 'Industrial' ? '🏭' : prop.type === 'Commercial' ? '🏢' : '🏠'}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-medium text-white truncate">{prop.name}</p>
+                  <p className="text-[10px] text-gray-400 truncate">{prop.location}</p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-[10px] text-emerald-400 font-bold">₹{prop.totalPrice}L</span>
+                    <span className="text-[10px] text-cyan-400">{prop.rentalYield}%</span>
                   </div>
                 </div>
               </div>
-              
-              {/* Tooltip */}
-              {hoveredZone === zone.id && (
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-gray-900 border border-gray-700 rounded-xl p-3 shadow-xl z-10">
-                  <p className="text-xs font-bold text-white">{zone.name}</p>
-                  <p className="text-[10px] text-gray-400 mt-1">{zone.label}</p>
-                  <div className={`mt-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] ${
-                    zone.type === 'green' ? 'bg-emerald-500/10 text-emerald-400' :
-                    zone.type === 'blue' ? 'bg-cyan-500/10 text-cyan-400' :
-                    'bg-red-500/10 text-red-400'
-                  }`}>
-                    {zone.type === 'green' && <TrendingUp className="w-3 h-3" />}
-                    {zone.type === 'blue' && <Building2 className="w-3 h-3" />}
-                    {zone.type === 'red' && <AlertTriangle className="w-3 h-3" />}
-                    {getZoneLabel(zone.type)}
-                  </div>
-                </div>
-              )}
-            </div>
+            </button>
           ))}
-
-          {/* Property Markers */}
-          {properties.map((prop, idx) => {
-            const positions = [
-              { x: 62, y: 30 },
-              { x: 28, y: 38 },
-              { x: 45, y: 72 },
-              { x: 55, y: 45 },
-              { x: 72, y: 55 },
-              { x: 38, y: 68 },
-            ];
-            const pos = positions[idx] || { x: 50, y: 50 };
-            return (
-              <div
-                key={prop.id}
-                className="absolute transform -translate-x-1/2 -translate-y-1/2 z-20"
-                style={{ left: `${pos.x}%`, top: `${pos.y}%` }}
-              >
-                <div className="relative group">
-                  <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${prop.imageGradient} flex items-center justify-center shadow-lg border-2 border-white/20`}>
-                    <span className="text-xs">
-                      {prop.type === 'Warehouse' ? '🏗️' : prop.type === 'Industrial' ? '🏭' : prop.type === 'Commercial' ? '🏢' : '🏠'}
-                    </span>
-                  </div>
-                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-40 bg-gray-900 border border-gray-700 rounded-xl p-2 shadow-xl">
-                    <p className="text-[10px] font-bold text-white">{prop.name}</p>
-                    <p className="text-[9px] text-gray-400">₹{prop.totalPrice}L | {prop.rentalYield}% yield</p>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-
-          {/* Compass */}
-          <div className="absolute top-4 right-4 w-12 h-12 bg-gray-800/80 rounded-full flex items-center justify-center border border-gray-700">
-            <span className="text-xs font-bold text-white">N</span>
-            <div className="absolute top-1 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[4px] border-r-[4px] border-b-[8px] border-l-transparent border-r-transparent border-b-red-500" />
-          </div>
-
-          {/* Scale */}
-          <div className="absolute bottom-4 left-4 flex items-center gap-2">
-            <div className="w-16 h-0.5 bg-gray-400" />
-            <span className="text-[10px] text-gray-400">~20km</span>
-          </div>
         </div>
       </div>
 
@@ -247,9 +243,9 @@ export default function MapView() {
         <div className="bg-gray-900 border border-emerald-500/20 rounded-2xl p-5">
           <div className="flex items-center gap-2 mb-3">
             <div className="w-3 h-3 bg-emerald-500 rounded-full" />
-            <h4 className="text-sm font-bold text-emerald-400">Green Zones</h4>
+            <h4 className="text-sm font-bold text-emerald-400">High Demand Zones</h4>
           </div>
-          <p className="text-xs text-gray-300 mb-3">High rental demand, low vacancy. Ideal for immediate income generation.</p>
+          <p className="text-xs text-gray-300 mb-3">Strong rental demand with low vacancy rates. Ideal for immediate income.</p>
           <div className="space-y-2">
             {mapZones.filter(z => z.type === 'green').map(z => (
               <div key={z.id} className="flex items-center justify-between p-2 bg-gray-800/50 rounded-lg">
@@ -263,9 +259,9 @@ export default function MapView() {
         <div className="bg-gray-900 border border-cyan-500/20 rounded-2xl p-5">
           <div className="flex items-center gap-2 mb-3">
             <div className="w-3 h-3 bg-cyan-500 rounded-full" />
-            <h4 className="text-sm font-bold text-cyan-400">Blue Vectors</h4>
+            <h4 className="text-sm font-bold text-cyan-400">Upcoming Infrastructure</h4>
           </div>
-          <p className="text-xs text-gray-300 mb-3">Upcoming infrastructure — Metro extensions, airports, expressways.</p>
+          <p className="text-xs text-gray-300 mb-3">Metro extensions, airports, expressways — high appreciation potential.</p>
           <div className="space-y-2">
             {mapZones.filter(z => z.type === 'blue').map(z => (
               <div key={z.id} className="flex items-center justify-between p-2 bg-gray-800/50 rounded-lg">
@@ -279,9 +275,9 @@ export default function MapView() {
         <div className="bg-gray-900 border border-red-500/20 rounded-2xl p-5">
           <div className="flex items-center gap-2 mb-3">
             <div className="w-3 h-3 bg-red-500 rounded-full" />
-            <h4 className="text-sm font-bold text-red-400">Red Flags</h4>
+            <h4 className="text-sm font-bold text-red-400">Risk Zones</h4>
           </div>
-          <p className="text-xs text-gray-300 mb-3">Heavy legal litigation or pending government land acquisition notices.</p>
+          <p className="text-xs text-gray-300 mb-3">Legal litigation or pending government acquisition notices.</p>
           <div className="space-y-2">
             {mapZones.filter(z => z.type === 'red').map(z => (
               <div key={z.id} className="flex items-center justify-between p-2 bg-gray-800/50 rounded-lg">
@@ -293,18 +289,72 @@ export default function MapView() {
         </div>
       </div>
 
-      {/* Data Source */}
-      <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5">
-        <div className="flex items-center gap-2 mb-2">
-          <Info className="w-4 h-4 text-gray-400" />
-          <span className="text-xs font-semibold text-gray-400">DATA SOURCES</span>
+      {/* Property Detail Modal */}
+      {selectedProperty && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setSelectedProperty(null)} />
+          <div className="relative bg-gray-900 border border-gray-800 rounded-2xl w-full max-w-md p-6">
+            <button 
+              onClick={() => setSelectedProperty(null)}
+              className="absolute top-4 right-4 w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center text-white hover:bg-gray-700"
+            >
+              ✕
+            </button>
+            <div className={`w-16 h-16 rounded-xl bg-gradient-to-br ${selectedProperty.imageGradient} flex items-center justify-center text-3xl mb-4`}>
+              {selectedProperty.type === 'Warehouse' ? '🏗️' : selectedProperty.type === 'Industrial' ? '🏭' : selectedProperty.type === 'Commercial' ? '🏢' : '🏠'}
+            </div>
+            <h3 className="text-lg font-bold text-white">{selectedProperty.name}</h3>
+            <p className="text-xs text-gray-400 mb-4">{selectedProperty.location}, {selectedProperty.city}</p>
+            
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              <div className="p-3 bg-gray-800/50 rounded-lg">
+                <p className="text-[10px] text-gray-400">Total Price</p>
+                <p className="text-sm font-bold text-white">₹{selectedProperty.totalPrice}L</p>
+              </div>
+              <div className="p-3 bg-gray-800/50 rounded-lg">
+                <p className="text-[10px] text-gray-400">Rental Yield</p>
+                <p className="text-sm font-bold text-emerald-400">{selectedProperty.rentalYield}%</p>
+              </div>
+              <div className="p-3 bg-gray-800/50 rounded-lg">
+                <p className="text-[10px] text-gray-400">Monthly Rent</p>
+                <p className="text-sm font-bold text-cyan-400">₹{(selectedProperty.avgMonthlyRent).toLocaleString()}</p>
+              </div>
+              <div className="p-3 bg-gray-800/50 rounded-lg">
+                <p className="text-[10px] text-gray-400">Appreciation</p>
+                <p className="text-sm font-bold text-purple-400">{selectedProperty.appreciationRate}%/yr</p>
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <p className="text-xs text-gray-400 mb-2">Nearby Demand Generators:</p>
+              <div className="flex flex-wrap gap-1">
+                {selectedProperty.demandGenerators.map((gen, i) => (
+                  <span key={i} className="text-[10px] px-2 py-1 bg-purple-500/10 text-purple-400 border border-purple-500/20 rounded-full">
+                    {gen}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex gap-2">
+              <a
+                href={`https://wa.me/${selectedProperty.builderPhone}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white text-xs font-medium rounded-lg transition-colors"
+              >
+                💬 WhatsApp Builder
+              </a>
+              <a
+                href={`tel:+${selectedProperty.builderPhone}`}
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-lg transition-colors"
+              >
+                📞 Call Now
+              </a>
+            </div>
+          </div>
         </div>
-        <p className="text-xs text-gray-300">
-          Map data sourced from <span className="text-cyan-400">MapmyIndia Workmate API</span> (superior data for Indian industrial zones, 
-          upcoming expressways, and metro corridors). Risk zones identified via <span className="text-amber-400">Landeed API</span> for 
-          encumbrance certificates and litigation checks. Infrastructure data from state government master plans.
-        </p>
-      </div>
+      )}
     </div>
   );
 }
