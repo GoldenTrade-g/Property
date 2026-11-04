@@ -20,11 +20,12 @@ export default function PropertyScanner() {
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [lastUpdate, setLastUpdate] = useState<string>('Loading...');
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [newListingsCount, setNewListingsCount] = useState(0);
 
   // Fetch data on mount and refresh
   useEffect(() => {
     loadData();
-    const interval = setInterval(loadData, 30000); // Refresh every 30 seconds
+    const interval = setInterval(loadData, 15000); // Refresh every 15 seconds
     return () => clearInterval(interval);
   }, []);
 
@@ -33,6 +34,7 @@ export default function PropertyScanner() {
     const result = await propertyDataService.fetchProperties();
     setProperties(result.data);
     setLastUpdate(propertyDataService.getTimeAgo());
+    setNewListingsCount(result.newListingsCount);
     setIsRefreshing(false);
   };
 
@@ -98,9 +100,15 @@ export default function PropertyScanner() {
           <Clock className="w-3.5 h-3.5 text-amber-400" />
           <span className="text-xs text-gray-400">Last updated: {lastUpdate}</span>
           <span className="text-xs text-gray-600">|</span>
-          <span className="text-xs text-gray-400">Auto-refreshes every 30 seconds</span>
+          <span className="text-xs text-gray-400">Auto-refreshes every 15 seconds</span>
           <span className="text-xs text-gray-600">|</span>
           <span className="text-xs text-emerald-400">{filteredProperties.length} live listings</span>
+          {newListingsCount > 0 && (
+            <>
+              <span className="text-xs text-gray-600">|</span>
+              <span className="text-xs text-cyan-400 font-medium">✨ {newListingsCount} new listing{newListingsCount > 1 ? 's' : ''} added</span>
+            </>
+          )}
         </div>
         <button
           onClick={loadData}
@@ -142,7 +150,12 @@ export default function PropertyScanner() {
                         {property.type === 'Warehouse' ? '🏗️' : property.type === 'Industrial' ? '🏭' : property.type === 'Commercial' ? '🏢' : '🏠'}
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-white">{property.name}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-medium text-white">{property.name}</p>
+                          {parseInt(property.id.replace('P', '')) > 6 && (
+                            <span className="text-[9px] px-1.5 py-0.5 bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 rounded font-bold animate-pulse">NEW</span>
+                          )}
+                        </div>
                         <p className="text-xs text-gray-400 flex items-center gap-1">
                           <MapPin className="w-3 h-3" />{property.location}
                         </p>

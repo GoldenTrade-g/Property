@@ -26,11 +26,12 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
   const [properties, setProperties] = useState<Property[]>([]);
   const [lastUpdate, setLastUpdate] = useState<string>('Loading...');
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [newListingsCount, setNewListingsCount] = useState(0);
 
   // Fetch data on mount and refresh
   useEffect(() => {
     loadData();
-    const interval = setInterval(loadData, 30000); // Refresh every 30 seconds
+    const interval = setInterval(loadData, 15000); // Refresh every 15 seconds
     return () => clearInterval(interval);
   }, []);
 
@@ -39,6 +40,7 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
     const result = await propertyDataService.fetchProperties();
     setProperties(result.data);
     setLastUpdate(propertyDataService.getTimeAgo());
+    setNewListingsCount(result.newListingsCount);
     setIsRefreshing(false);
   };
 
@@ -75,7 +77,10 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
             <span className="text-xs font-medium text-emerald-400">LIVE DATA</span>
           </div>
           <span className="text-xs text-gray-400">Last updated: {lastUpdate}</span>
-          <span className="text-xs text-gray-500">• Auto-refreshes every 30 seconds</span>
+          <span className="text-xs text-gray-500">• Auto-refreshes every 15 seconds</span>
+          {newListingsCount > 0 && (
+            <span className="text-xs text-cyan-400 font-medium">• {newListingsCount} new listing{newListingsCount > 1 ? 's' : ''} added</span>
+          )}
         </div>
         <button
           onClick={loadData}
@@ -217,7 +222,12 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
             const loanAmount = property.totalPrice * 0.8;
             const loanTenure = 15;
             return (
-              <div key={property.id} className="bg-gray-800/50 border border-gray-700 rounded-xl p-4 hover:border-emerald-500/30 transition-colors">
+              <div key={property.id} className="bg-gray-800/50 border border-gray-700 rounded-xl p-4 hover:border-emerald-500/30 transition-colors relative">
+                {parseInt(property.id.replace('P', '')) > 6 && (
+                  <div className="absolute top-2 right-2">
+                    <span className="text-[9px] px-1.5 py-0.5 bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 rounded font-bold animate-pulse">NEW</span>
+                  </div>
+                )}
                 <div className={`w-full h-20 rounded-lg bg-gradient-to-br ${property.imageGradient} mb-4 flex items-center justify-center`}>
                   <span className="text-3xl">
                     {property.type === 'Warehouse' ? '🏗️' : property.type === 'Industrial' ? '🏭' : property.type === 'Commercial' ? '🏢' : '🏠'}

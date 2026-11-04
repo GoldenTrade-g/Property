@@ -25,11 +25,12 @@ export default function ROICalculator() {
   const [monthlyRent, setMonthlyRent] = useState(0);
   const [lastUpdate, setLastUpdate] = useState<string>('Loading...');
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [newListingsCount, setNewListingsCount] = useState(0);
 
   // Fetch data on mount and refresh
   useEffect(() => {
     loadData();
-    const interval = setInterval(loadData, 30000); // Refresh every 30 seconds
+    const interval = setInterval(loadData, 15000); // Refresh every 15 seconds
     return () => clearInterval(interval);
   }, []);
 
@@ -38,6 +39,7 @@ export default function ROICalculator() {
     const result = await propertyDataService.fetchProperties();
     setProperties(result.data);
     setLastUpdate(propertyDataService.getTimeAgo());
+    setNewListingsCount(result.newListingsCount);
     
     // Set default property if not set
     if (!selectedPropertyId && result.data.length > 0) {
@@ -252,6 +254,9 @@ export default function ROICalculator() {
           </div>
           <span className="text-xs text-gray-400">Last updated: {lastUpdate}</span>
           <span className="text-xs text-gray-500">• Prices fluctuate in real-time</span>
+          {newListingsCount > 0 && (
+            <span className="text-xs text-cyan-400 font-medium">• {newListingsCount} new listing{newListingsCount > 1 ? 's' : ''} added</span>
+          )}
         </div>
         <button
           onClick={loadData}
